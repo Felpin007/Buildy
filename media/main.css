@@ -1,0 +1,356 @@
+/* media/main.css */
+
+body, html {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevent scrollbars if content fits */
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    color: var(--vscode-foreground);
+    background-color: var(--vscode-sideBar-background); /* Match sidebar background */
+}
+
+.content-wrapper {
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent wrapper from causing scroll */
+}
+
+/* --- Generator Section --- */
+.generator-section {
+    padding: 10px 12px;
+    /* border-bottom: 1px solid var(--vscode-sideBar-border); */ /* Removed border as it's the only section now */
+    display: flex; /* Enable flexbox */
+    flex-direction: column; /* Stack items vertically */
+    height: 100%; /* Make section take full height of its container */
+    box-sizing: border-box;
+}
+
+.generator-section h2 {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.generator-section label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: var(--vscode-font-size);
+}
+
+.generator-section textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    font-family: var(--vscode-editor-font-family); /* Use editor font */
+    font-size: var(--vscode-editor-font-size);
+    color: var(--vscode-input-foreground);
+    background-color: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder, transparent));
+    padding: 4px;
+    resize: vertical; /* Allow vertical resize */
+    height: 90vh;
+}
+
+.generator-section textarea:focus {
+    border-color: var(--vscode-focusBorder);
+    outline: none;
+}
+
+.generator-section button {
+    color: var(--vscode-button-foreground);
+    background-color: var(--vscode-button-background);
+    border: 1px solid var(--vscode-button-border, transparent);
+    padding: 5px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%; /* Make button full width */
+    justify-content: center;
+}
+
+.generator-section button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+/* --- Divider --- */
+.section-divider {
+    border: none;
+    border-top: 1px solid var(--vscode-sideBar-border);
+    margin: 0;
+}
+
+/* --- Explorer Section --- */
+.explorer-section {
+    flex-grow: 1; /* Take remaining vertical space */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent this section from overflowing */
+    padding-bottom: 5px; /* Space at the bottom */
+}
+
+.explorer-header {
+    display: flex;
+    align-items: center;
+    padding: 3px 12px;
+    border-bottom: 1px solid var(--vscode-sideBar-border);
+    position: relative; /* For absolute positioning of actions */
+    flex-shrink: 0; /* Prevent header from shrinking */
+    padding-bottom: 7px;
+}
+
+.explorer-title {
+    flex-grow: 1;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 50px; /* Space for actions */
+}
+.explorer-actions {
+    display: none; /* Hidden by default */
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--vscode-sideBar-background); /* Match background */
+    border-radius: 3px;
+    /* box-shadow: 0 0 4px rgba(0,0,0,0.1); */ /* Optional shadow */
+}
+
+.explorer-header:hover .explorer-actions,
+.webview-focused .explorer-actions {
+    display: flex; /* Show on hover or focus */
+    gap: 4px;
+}
+
+.explorer-actions button {
+    background: none;
+    border: none;
+    color: var(--vscode-icon-foreground);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 3px;
+    display: flex; /* Align icon */
+    align-items: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.explorer-actions button:hover {
+    background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+
+.explorer-actions button.hidden {
+    display: none;
+}
+
+.file-tree-container {
+    flex-grow: 1; /* Allow container to grow */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 5px 0px 5px 12px; /* Padding around the tree */
+}
+
+#loadingIndicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 0;
+    color: var(--vscode-descriptionForeground);
+}
+
+#treePlaceholder {
+    padding: 10px 0;
+    color: var(--vscode-descriptionForeground);
+}
+
+/* --- File Tree Styling --- */
+.file-tree {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    margin-left: -24px;
+}
+
+.file-tree-item {
+    position: relative; /* Needed for absolute positioning of pseudo-elements */
+    --indent-level: 0; /* Default indent level */
+    padding-left: calc(var(--indent-level, 0) * 18px); /* Apply indent to the LI */
+    /* margin-left: 10px; Remove base margin, rely on padding */
+}
+
+.file-tree-item[aria-expanded]::before {
+    content: '';
+    position: absolute;
+    top: 40px;
+    left: 20px;
+    width: 1px;
+    height: calc(100% - 44px);
+    background-color: var(--vscode-tree-indentGuidesStroke);
+    pointer-events: none;
+}
+
+/* Stop the vertical line for the last item in any list */
+.file-tree-item:last-child[aria-expanded]::before {
+    height: 0;
+}
+
+/* Horizontal connector for expanded items */
+.file-tree-item.expanded > .children > .file-tree-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20px;
+    width: 1px;
+    height: 22px;
+    background-color: var(--vscode-tree-indentGuidesStroke);
+}
+
+/* Horizontal line connecting to the item */
+/* REMOVED: Horizontal line connector using ::after */
+/*
+.file-tree-item::after { ... }
+*/
+
+/* Indentation guides (optional) */
+/*
+.file-tree-item::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--indent-level, 0) * 18px + 10px);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--vscode-tree-indentGuidesStroke);
+    pointer-events: none;
+}
+.file-tree-item:hover::before {
+     background-color: var(--vscode-tree-inactiveIndentGuidesStroke);
+}
+*/
+
+.node-content {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+    /* padding-left removed, handled by parent LI */
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 22px; /* Standard VS Code tree item height */
+    line-height: 22px;
+    margin-left: 12px; /* Add margin to push content right, leaving space for tree line */
+}
+
+.node-content:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+/* Active file highlight */
+.file-tree-item.active-file > .node-content {
+    background-color: var(--vscode-list-focusBackground);
+}
+.file-tree-item.active-file > .node-content:hover {
+    background-color: var(--vscode-list-focusBackground); /* Keep focus color on hover */
+}
+
+
+.node-chevron,
+.node-icon,
+.node-checkbox,
+.node-label {
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.node-chevron {
+    width: 16px; /* Make chevron area smaller */
+    text-align: center;
+    color: var(--vscode-icon-foreground);
+    flex-shrink: 0;
+    margin-right: 2px; /* Space before icon */
+}
+
+.node-icon {
+    width: 20px; /* Icon area width */
+    text-align: center;
+    color: var(--vscode-icon-foreground);
+    flex-shrink: 0;
+    margin-right: 4px; /* Space after icon */
+}
+
+.node-checkbox {
+    margin: 0; /* Reset margin */
+    flex-shrink: 0;
+    margin-right: 6px; /* Space after checkbox */
+}
+
+.node-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-grow: 1;
+    /* padding-left: 4px; REMOVE */
+}
+
+
+/* Children list - hidden by default */
+.file-tree-item > .children {
+    display: none;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+/* Show children when expanded */
+.file-tree-item.expanded > .children {
+    display: block;
+}
+
+/* --- Context Menu --- */
+#explorerContextMenu {
+    position: fixed; /* Use fixed to position relative to viewport */
+    background-color: var(--vscode-menu-background);
+    border: 1px solid var(--vscode-menu-border);
+    box-shadow: var(--vscode-widget-shadow);
+    border-radius: 4px;
+    padding: 4px 0;
+    min-width: 180px;
+    z-index: 1000;
+    display: none; /* Hidden by default */
+}
+
+#explorerContextMenu.active {
+    display: block;
+}
+
+#explorerContextMenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#explorerContextMenu li {
+    padding: 5px 12px;
+    cursor: pointer;
+    color: var(--vscode-menu-foreground);
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+}
+
+#explorerContextMenu li:hover {
+    background-color: var(--vscode-menu-selectionBackground);
+    color: var(--vscode-menu-selectionForeground);
+}
+
+#explorerContextMenu li i.codicon {
+    font-size: 16px; /* Ensure icon size is appropriate */
+}
