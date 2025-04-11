@@ -3,7 +3,7 @@
   "displayName": "AI Code Structure Generator",
   "description": "Generates project file structures from a specific JSON format, ideal for use with AI models like Google Gemini. Paste the AI-generated JSON to create files and folders.",
   "publisher": "FelpolinColorado",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.99.0"
   },
