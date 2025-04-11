@@ -10,10 +10,7 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onView:structureView",
-    "onView:copySystemView"
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -31,13 +28,15 @@
           "id": "structureView",
           "name": "Structure",
           "type": "webview",
-          "contextualTitle": "Structure Generator"
+          "contextualTitle": "Structure Generator",
+          "icon": "icon.svg"
         },
         {
           "id": "copySystemView",
           "name": "Copy System",
           "type": "webview",
-          "contextualTitle": "Copy System"
+          "contextualTitle": "Copy System",
+          "icon": "icon.svg"
         }
       ]
     }
