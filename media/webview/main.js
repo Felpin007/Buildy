@@ -147,44 +147,54 @@ window.addEventListener('message', event => {
     switch (message.command) {
         case 'structureData':
             isTreeLoaded = true;
-            loadingIndicator.style.display = 'none';
-            explorerTitle.textContent = message.workspaceFolderName || 'Workspace'; // Update title
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            if (explorerTitle) explorerTitle.textContent = message.workspaceFolderName || 'Workspace'; // Update title
 
             if (message.error) {
-                treePlaceholder.textContent = `Erro: ${message.error === 'No workspace open' ? 'Nenhuma pasta de workspace aberta.' : message.error}`;
-                treePlaceholder.style.display = 'block';
-                fileTree.style.display = 'none';
-                fileTree.innerHTML = '';
+                if (treePlaceholder) {
+                    treePlaceholder.textContent = `Erro: ${message.error === 'No workspace open' ? 'Nenhuma pasta de workspace aberta.' : message.error}`;
+                    treePlaceholder.style.display = 'block';
+                }
+                if (fileTree) {
+                    fileTree.style.display = 'none';
+                    fileTree.innerHTML = '';
+                }
             } else if (message.data && message.data.length > 0) {
-                treePlaceholder.style.display = 'none';
-                fileTree.style.display = 'block';
-                // Call imported renderTree, passing necessary handlers and elements
-                renderTree(
-                    message.data,
-                    fileTree, // parentElement for renderTree
-                    handleCheckboxChange, // Pass imported function from checkboxUtils
-                    updateCopyButtonState, // Pass imported function from checkboxUtils
-                    fileTree, // Pass fileTree element again (needed by handlers)
-                    copySelectedButton, // Pass copy button element
-                    vscode // Pass the vscode API object
-                );
+                if (treePlaceholder) treePlaceholder.style.display = 'none';
+                if (fileTree) {
+                    fileTree.style.display = 'block';
+                    // Call imported renderTree, passing necessary handlers and elements
+                    renderTree(
+                        message.data,
+                        fileTree, // parentElement for renderTree
+                        handleCheckboxChange, // Pass imported function from checkboxUtils
+                        updateCopyButtonState, // Pass imported function from checkboxUtils
+                        fileTree, // Pass fileTree element again (needed by handlers)
+                        copySelectedButton, // Pass copy button element
+                        vscode // Pass the vscode API object
+                    );
+                }
             } else {
-                treePlaceholder.textContent = 'Workspace vazio ou nenhum item encontrado.';
-                treePlaceholder.style.display = 'block';
-                fileTree.style.display = 'none';
-                fileTree.innerHTML = '';
+                if (treePlaceholder) {
+                    treePlaceholder.textContent = 'Workspace vazio ou nenhum item encontrado.';
+                    treePlaceholder.style.display = 'block';
+                }
+                if (fileTree) {
+                    fileTree.style.display = 'none';
+                    fileTree.innerHTML = '';
+                }
             }
-            updateCopyButtonState(copySelectedButton, fileTree); // Initial state update
-            // Handle active file highlight if needed (using message.activeFilePath)
-            // setActiveFileHighlight(message.activeFilePath); // Implement this function if needed
+            if (copySelectedButton && fileTree) updateCopyButtonState(copySelectedButton, fileTree);
             break;
 
         case 'setLoading':
-            loadingIndicator.style.display = message.isLoading ? 'flex' : 'none';
+            if (loadingIndicator) loadingIndicator.style.display = message.isLoading ? 'flex' : 'none';
             if (message.isLoading) {
-                treePlaceholder.style.display = 'none';
-                fileTree.style.display = 'none';
-                fileTree.innerHTML = '';
+                if (treePlaceholder) treePlaceholder.style.display = 'none';
+                if (fileTree) {
+                    fileTree.style.display = 'none';
+                    fileTree.innerHTML = '';
+                }
             }
             hideContextMenu(contextMenu);
             currentContextMenuTarget = null;
