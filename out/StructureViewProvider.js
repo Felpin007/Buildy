@@ -36,8 +36,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StructureViewProvider = void 0;
 // src/StructureViewProvider.ts
 const vscode = __importStar(require("vscode"));
-const htmlContent_1 = require("./webview/htmlContent"); // We will recreate this next
+const htmlContent_1 = require("./webview/htmlContent");
 const fileSystemService_1 = require("./services/fileSystemService"); // Restore import
+const constants = __importStar(require("./constants")); // <-- Import constants
+// Removed duplicate import of getWorkspaceTree
 class StructureViewProvider {
     _extensionUri;
     _context;
@@ -70,6 +72,10 @@ class StructureViewProvider {
         // Setup active editor listener if needed for highlighting (keep commented for now)
         // this._setupActiveEditorListener();
     }
+    // --- MODIFICATION START: Add getter for the webview view ---
+    getWebviewView() {
+        return this._view;
+    }
     resolveWebviewView(webviewView, context, _token) {
         this._view = webviewView;
         webviewView.webview.options = {
@@ -85,24 +91,58 @@ class StructureViewProvider {
             console.log(`[StructureViewProvider] Received message: ${message.command}`);
             switch (message.command) {
                 case 'generateStructure':
+                    console.log(`[StructureViewProvider] Received 'generateStructure' message from webview. Executing command...`); // <-- ADDED LOG
                     // Execute the command registered in extension.ts
-                    // Pass null for provider as it's not needed for refresh anymore
-                    vscode.commands.executeCommand('ai-structure-generator.processPastedStructure', message.text);
+                    // Pass the webview object so the command can send progress back
+                    vscode.commands.executeCommand('buildy.processPastedStructure', message.text, this._view?.webview);
                     return;
+                case 'showDiff': // Handle diff request from webview
+                    console.log(`[StructureViewProvider] Received 'showDiff' message for path: ${message.path}, type: ${message.type}`);
+                    // Pass the full arguments object to the command
+                    vscode.commands.executeCommand('buildy.showDiff', {
+                        relativePath: message.path,
+                        type: message.type // Pass the type ('undo' or 'generation'/undefined)
+                    });
+                    return;
+                case 'undoLastGeneration': // Handle undo request from webview
+                    console.log(`[StructureViewProvider] Received 'undoLastGeneration' message.`);
+                    // Execute the command. It will retrieve the last hash from workspaceState.
+                    // Pass the webview instance to the undo command
+                    vscode.commands.executeCommand('buildy.undoLastGeneration', undefined, this._view?.webview); // Pass undefined for hash (command will fetch), and the webview
+                    return;
+                // --- MODIFICATION START: Handle saving additional prompt ---
+                case 'saveAdditionalPrompt':
+                    if (typeof message.text === 'string') {
+                        console.log(`[StructureViewProvider] Received 'saveAdditionalPrompt'. Saving text: "${message.text}"`);
+                        await this._context.globalState.update(constants.ADDITIONAL_PROMPT_KEY, message.text);
+                        // Optionally notify the user (can be silent)
+                        // vscode.window.showInformationMessage("Additional prompt text saved.");
+                    }
+                    else {
+                        console.warn("[StructureViewProvider] Received 'saveAdditionalPrompt' without valid text.");
+                    }
+                    return;
+                // --- MODIFICATION END ---
+                // --- MODIFICATION START: Handle request for initial additional prompt ---
+                case 'requestInitialAdditionalPrompt':
+                    console.log("[StructureViewProvider] Received 'requestInitialAdditionalPrompt'. Sending saved value.");
+                    this.sendAdditionalPromptToWebview();
+                    return;
+                // --- MODIFICATION END ---
                 case 'getStructure': // Add back
                     if (this._currentWorkspaceRoot) {
                         await this.refreshFileTree();
                     }
                     else {
                         if (this._view?.visible) {
-                            vscode.window.showWarningMessage('Nenhuma pasta de workspace aberta.');
+                            vscode.window.showWarningMessage('No workspace folder open.');
                         }
                         this._view?.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
                     }
                     return;
                 case 'copySelectedFilesContent': // Add back (using new command name)
                     console.log("[StructureViewProvider] Received 'copySelectedFilesContent', executing command...");
-                    vscode.commands.executeCommand('ai-structure-generator.copySelectedFilesContent', message.paths);
+                    vscode.commands.executeCommand('buildy.copySelectedFilesContent', message.paths);
                     return;
                 case 'openFile': // Add back
                     if (message.path && this._currentWorkspaceRoot) {
@@ -113,17 +153,17 @@ class StructureViewProvider {
                                 vscode.window.showTextDocument(doc, { preview: false });
                             }, err => {
                                 console.error(`[StructureViewProvider] Failed to open document ${fileUri.fsPath}:`, err);
-                                vscode.window.showErrorMessage(`Não foi possível abrir o documento: ${message.path}`);
+                                vscode.window.showErrorMessage(`Could not open document: ${message.path}`);
                             });
                         }
                         catch (error) {
                             console.error(`[StructureViewProvider] Error constructing URI or opening file ${message.path}:`, error);
-                            vscode.window.showErrorMessage(`Erro ao tentar abrir o arquivo: ${message.path}`);
+                            vscode.window.showErrorMessage(`Error trying to open file: ${message.path}`);
                         }
                     }
                     else {
                         console.warn(`[StructureViewProvider] 'openFile' message received without path or workspace root.`);
-                        vscode.window.showWarningMessage('Não foi possível determinar o arquivo a ser aberto.');
+                        vscode.window.showWarningMessage('Could not determine the file to open.');
                     }
                     return;
                 case 'showError':
@@ -142,18 +182,36 @@ class StructureViewProvider {
                         console.log("[StructureViewProvider] No workspace found on webview ready.");
                         this._view?.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
                     }
+                    // Send initial undo state when webview is ready
+                    this.sendUndoState();
+                    // --- MODIFICATION START: Send initial additional prompt ---
+                    this.sendAdditionalPromptToWebview();
+                    // --- MODIFICATION END ---
+                    return;
+                case 'requestInitialUndoState':
+                    console.log("[StructureViewProvider] Received 'requestInitialUndoState' message.");
+                    this.sendUndoState();
                     return;
             }
         }, undefined, this._context.subscriptions);
         // Refresh tree if the view becomes visible and workspace exists (Restore this)
         const visibilityChangeListener = webviewView.onDidChangeVisibility(() => {
-            if (webviewView.visible && this._currentWorkspaceRoot) {
-                console.log("[StructureViewProvider] View became visible, refreshing tree.");
-                this.refreshFileTree();
-            }
-            else if (webviewView.visible && !this._currentWorkspaceRoot) {
-                console.log("[StructureViewProvider] View became visible, no workspace.");
-                this._view?.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
+            if (webviewView.visible) {
+                console.log("[StructureViewProvider] View became visible.");
+                // Refresh tree if workspace exists
+                if (this._currentWorkspaceRoot) {
+                    console.log("[StructureViewProvider] Refreshing tree on visibility.");
+                    this.refreshFileTree();
+                }
+                else {
+                    // Ensure view is cleared if no workspace on visibility change
+                    this._view?.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
+                }
+                // Always update undo state on visibility change
+                this.sendUndoState();
+                // --- MODIFICATION START: Send additional prompt on visibility change ---
+                this.sendAdditionalPromptToWebview();
+                // --- MODIFICATION END ---
             }
             else {
                 console.log("[StructureViewProvider] View became hidden.");
@@ -163,6 +221,23 @@ class StructureViewProvider {
         // Send initial active file if needed (keep commented for now)
         // this._sendActiveFileToWebview(vscode.window.activeTextEditor?.document.uri);
     }
+    // Helper method to send the current undo state
+    sendUndoState() {
+        if (!this._view)
+            return;
+        const currentCheckpointHash = this._context.workspaceState.get(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY);
+        console.log(`[StructureViewProvider.sendUndoState] Sending updateUndoState. Checkpoint available: ${!!currentCheckpointHash}`);
+        this._view.webview.postMessage({ command: 'updateUndoState', canUndo: !!currentCheckpointHash });
+    }
+    // --- MODIFICATION START: Helper method to send additional prompt ---
+    sendAdditionalPromptToWebview() {
+        if (!this._view)
+            return;
+        const savedPrompt = this._context.globalState.get(constants.ADDITIONAL_PROMPT_KEY, ''); // Default to empty string
+        console.log(`[StructureViewProvider.sendAdditionalPromptToWebview] Sending additional prompt: "${savedPrompt}"`);
+        this._view.webview.postMessage({ command: 'updateAdditionalPrompt', text: savedPrompt });
+    }
+    // --- MODIFICATION END ---
     // Restore refreshFileTree method
     async refreshFileTree() {
         if (!this._view) {
@@ -197,7 +272,7 @@ class StructureViewProvider {
                 this._view.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
             }
             else {
-                vscode.window.showErrorMessage(`Erro ao ler a estrutura do workspace: ${error instanceof Error ? error.message : String(error)}`);
+                vscode.window.showErrorMessage(`Error reading workspace structure: ${error instanceof Error ? error.message : String(error)}`);
                 this._view.webview.postMessage({ command: 'structureData', data: null, error: 'Failed to read workspace' });
             }
         }

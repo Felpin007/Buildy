@@ -50,11 +50,13 @@ export function renderTree(nodes, parentElement, handleCheckboxChange, updateCop
         const safeIdSuffix = sanitizeForId(node.relativePath || node.name);
         const labelId = `label-${safeIdSuffix}`;
         checkbox.setAttribute('aria-labelledby', labelId);
-        checkbox.addEventListener('change', (event) => {
-            // Call the imported handler, passing necessary context
-            handleCheckboxChange(event.target, fileTree); // Handle parent/child checks
-            updateCopyButtonState(copySelectedButton, fileTree); // Update button state
-        });
+                          // Revert to 'change' event and pass event.target
+                          checkbox.addEventListener('change', (event) => {
+                              // Call the original handler from checkboxUtils, passing the checkbox element
+                              handleCheckboxChange(event.target, fileTree);
+                              // Update button state after handling the change
+                              updateCopyButtonState(copySelectedButton, fileTree);
+                          });
 
         // Expansion chevron (for directories)
         const chevron = document.createElement('span');

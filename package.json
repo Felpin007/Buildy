@@ -1,9 +1,15 @@
 {
-  "name": "ai-structure-generator",
-  "displayName": "AI Code Structure Generator",
-  "description": "Generates project file structures from a specific JSON format, ideal for use with AI models like Google Gemini. Paste the AI-generated JSON to create files and folders.",
+  "name": "buildy",
+  "displayName": "Buildy",
+  "description": "Automate codebase changes using AI-generated instructions. Paste structured responses (XML-like format) to create/modify files, run terminal commands, and manage your project structure. Includes undo functionality (requires Git) and file browsing.",
   "publisher": "FelpolinColorado",
-  "version": "0.0.6",
+  "version": "0.1.2",
+  "license": "UNLICENSED",
+  "homepage": "https://github.com/Felpin007/Buildy",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Felpin007/Buildy.git"
+  },
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -16,29 +22,39 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "structure-generator-view-container",
-          "title": "AI Structure Gen",
-          "icon": "icon.svg"
+          "id": "buildy-view-container",
+          "title": "Buildy",
+          "icon": "images/icon.png"
         }
       ]
     },
     "views": {
-      "structure-generator-view-container": [
+      "buildy-view-container": [
         {
           "id": "structureView",
           "name": "Structure",
           "type": "webview",
-          "contextualTitle": "Structure Generator",
-          "icon": "icon.svg"
+          "contextualTitle": "Buildy",
+          "icon": "images/icon.png"
         },
         {
           "id": "copySystemView",
           "name": "Copy System",
           "type": "webview",
-          "contextualTitle": "Copy System",
-          "icon": "icon.svg"
+          "contextualTitle": "Buildy",
+          "icon": "images/icon.png"
         }
       ]
+    },
+    "configuration": {
+      "title": "Buildy",
+      "properties": {
+        "buildy.enableCheckpoints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the experimental checkpoint/undo feature using a hidden shadow Git repository. Requires Git to be installed."
+        }
+      }
     }
   },
   "scripts": {
@@ -57,7 +73,6 @@
     "@types/vscode": "^1.99.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
-    "@vscode/codicons": "^0.0.36",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
     "eslint": "^9.23.0",
@@ -66,6 +81,8 @@
   },
   "dependencies": {
     "simple-git": "^3.27.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "@vscode/codicons": "^0.0.36",
+    "globby": "^14.0.1"
   }
 }

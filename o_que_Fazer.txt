@@ -1,8 +1,0 @@
-melhorar o design deixar mais acessivel e responsivo
-adicionar abas:
--padrão de criação/edição
--edição de SVG
--copiar código atual
--simplificar criação de estrutura/atualização
--tentar fazer um jeito de não mostrar os comandos no terminal
--fazer um jeito do conteudo.json nao aparecer.

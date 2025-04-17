@@ -52,12 +52,22 @@ export function showContextMenu(event, targetElement, contextMenu, fileTreeConta
     }
 
     if (pathsToCopy.length > 0) {
+        // Option: Copy plain text
         menuItems.push({
-            label: pathsToCopy.length > 1 ? 'Copiar Arquivos Selecionados' : 'Copiar Arquivo',
+            label: 'Copy plain text',
             icon: 'codicon-clippy',
             action: () => {
                 console.log('[ContextMenu] Requesting copy for paths:', pathsToCopy);
                 vscode.postMessage({ command: 'copySelectedFiles', paths: pathsToCopy });
+            }
+        });
+        // Option: Copy file with all contents
+        menuItems.push({
+            label: 'Copy file with all contents',
+            icon: 'codicon-copy',
+            action: () => {
+                console.log('[ContextMenu] Requesting copyFilesToClipboard for paths:', pathsToCopy);
+                vscode.postMessage({ command: 'copyFilesToClipboard', paths: pathsToCopy });
             }
         });
     }
