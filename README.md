@@ -1,5 +1,7 @@
 # Buildy
 
+[View extension page](https://marketplace.visualstudio.com/items/?itemName=FelpolinColorado.buildy)
+
 Use AI-generated responses in a specific format to automatically generate everything and quickly update your codebase.  
 We recommend using the best current AI model: [Gemini 2.5 Pro](https://aistudio.google.com)
 
