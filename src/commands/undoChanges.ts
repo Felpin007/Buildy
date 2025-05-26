@@ -20,7 +20,8 @@ export async function undoLastGenerationCommand(
     context: vscode.ExtensionContext,
     provider: StructureViewProvider, 
     checkpointHash: string | undefined, 
-       webview?: vscode.Webview 
+    webview?: vscode.Webview,
+    skipConfirmation?: boolean
    ): Promise<void> {
     if (!checkpointHash) {
          checkpointHash = context.workspaceState.get<string>(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY);
@@ -31,17 +32,8 @@ export async function undoLastGenerationCommand(
          console.warn("[undoCommand] Comando desfazer chamado sem hash específico, usando último hash pré-geração armazenado:", checkpointHash);
     }
     const targetCheckpointShortHash = checkpointHash.substring(0, 7);
-    const confirm = await vscode.window.showWarningMessage(
-              `Tem certeza que deseja reverter os arquivos rastreados para o estado do checkpoint ${targetCheckpointShortHash}?` +
-              `Isso sobrescreverá os arquivos modificados em seu workspace com a versão salva no checkpoint.` +
-              `(Novos arquivos não rastreados criados pela geração NÃO serão removidos por esta operação.)`,
-              { modal: true },
-              'Desfazer para Checkpoint' 
-       );
-       if (confirm !== 'Desfazer para Checkpoint') {
-               vscode.window.showInformationMessage('Operação de desfazer cancelada.');
-         return;
-    }
+    // A confirmação já é feita no webview, não precisamos de uma segunda confirmação aqui
+    console.log("[undoCommand] Processando comando de desfazer para o checkpoint: " + targetCheckpointShortHash);
     let tracker: CheckpointTracker | undefined;
        let hashBeforeUndo: string | undefined; 
     try {

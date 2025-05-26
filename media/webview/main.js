@@ -1,6 +1,7 @@
 import { getSelectedFilePaths, updateCopyButtonState, handleCheckboxChange } from './checkboxUtils.js';
 import { showContextMenu, hideContextMenu } from './contextMenu.js';
 import { renderTree } from './treeView.js';
+import { WebviewCommands } from './webviewCommands.js';
 /**
  * Módulo principal do webview da extensão Buildy
  * Gerencia a interface do usuário e a comunicação com a extensão VS Code
@@ -140,7 +141,7 @@ import { renderTree } from './treeView.js';
         const type = button.dataset.type;
         if (path && type) {
             console.log(`[Webview] Solicitando diff para: ${path}, tipo: ${type}`);
-            vscode.postMessage({ command: 'showDiff', path: path, type: type });
+            vscode.postMessage({ command: WebviewCommands.SHOW_DIFF, path: path, type: type });
         }
     }
     /**
@@ -174,14 +175,14 @@ import { renderTree } from './treeView.js';
      * Solicita o conteúdo dos prompts para Windows e Linux à extensão
      */
     function requestPromptContent() {
-        vscode.postMessage({ command: 'getPromptContent', platform: 'windows' });
-        vscode.postMessage({ command: 'getPromptContent', platform: 'linux' });
+        vscode.postMessage({ command: WebviewCommands.GET_PROMPT_CONTENT, platform: 'windows' });
+        vscode.postMessage({ command: WebviewCommands.GET_PROMPT_CONTENT, platform: 'linux' });
     }
     generateButton?.addEventListener('click', () => {
         if (isGenerating) return;
         const text = structureInput?.value;
         if (!text || text.trim().length === 0) {
-            vscode.postMessage({ command: 'showError', text: 'Please paste the structure text in the designated area.' });
+            vscode.postMessage({ command: WebviewCommands.SHOW_ERROR, text: 'Please paste the structure text in the designated area.' });
             return;
         }
         isGenerating = true;
@@ -192,11 +193,11 @@ import { renderTree } from './treeView.js';
             generateButton.disabled = true;
             generateButton.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> Generating...';
         }
-        vscode.postMessage({ command: 'generateStructure', text: text });
+        vscode.postMessage({ command: WebviewCommands.GENERATE_STRUCTURE, text: text });
     });
     copyWinPromptButton?.addEventListener('click', () => {
         if (!windowsPromptContent) {
-            vscode.postMessage({ command: 'getPromptContent', platform: 'windows' });
+            vscode.postMessage({ command: WebviewCommands.GET_PROMPT_CONTENT, platform: 'windows' });
             return;
         }
         navigator.clipboard.writeText(windowsPromptContent)
@@ -211,7 +212,7 @@ import { renderTree } from './treeView.js';
     
     copyLinuxPromptButton?.addEventListener('click', () => {
         if (!linuxPromptContent) {
-            vscode.postMessage({ command: 'getPromptContent', platform: 'linux' });
+            vscode.postMessage({ command: WebviewCommands.GET_PROMPT_CONTENT, platform: 'linux' });
             return;
         }
         navigator.clipboard.writeText(linuxPromptContent)
@@ -232,17 +233,89 @@ import { renderTree } from './treeView.js';
     saveAdditionalPromptButton?.addEventListener('click', () => {
         if (additionalPromptInput) {
             additionalPrompt = additionalPromptInput.value;
-            vscode.postMessage({ command: 'saveAdditionalPrompt', text: additionalPrompt });
+            vscode.postMessage({ command: WebviewCommands.SAVE_ADDITIONAL_PROMPT, text: additionalPrompt });
             showTemporaryButtonText(saveAdditionalPromptButton, 'Saved!');
         }
     });
     undoButton?.addEventListener('click', () => {
         if (undoButton.disabled) return;
         console.log("[Webview] Undo button clicked.");
-        if (confirm('Are you sure you want to undo the last generation? This will revert all changes made by the last generation.')) {
+        
+        // Criar uma caixa de diálogo de confirmação personalizada em vez de usar confirm()
+        const confirmDialog = document.createElement('div');
+        confirmDialog.className = 'custom-confirm-dialog';
+        confirmDialog.innerHTML = `
+            <div class="confirm-dialog-content">
+                <p>Tem certeza que deseja desfazer a última geração? Isso reverterá todas as mudanças feitas.</p>
+                <div class="confirm-dialog-buttons">
+                    <button id="confirmUndoYes" class="confirm-yes">Sim</button>
+                    <button id="confirmUndoNo" class="confirm-no">Não</button>
+                </div>
+            </div>
+        `;
+        
+        // Adicionar a caixa de diálogo ao DOM
+        document.body.appendChild(confirmDialog);
+        
+        // Adicionar estilos CSS para a caixa de diálogo
+        const style = document.createElement('style');
+        style.textContent = `
+            .custom-confirm-dialog {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+            .confirm-dialog-content {
+                background-color: var(--vscode-editor-background);
+                border: 1px solid var(--vscode-panel-border);
+                padding: 20px;
+                border-radius: 4px;
+                max-width: 400px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            }
+            .confirm-dialog-buttons {
+                display: flex;
+                justify-content: flex-end;
+                margin-top: 20px;
+                gap: 10px;
+            }
+            .confirm-yes, .confirm-no {
+                padding: 6px 12px;
+                border: none;
+                border-radius: 2px;
+                cursor: pointer;
+            }
+            .confirm-yes {
+                background-color: var(--vscode-button-background);
+                color: var(--vscode-button-foreground);
+            }
+            .confirm-no {
+                background-color: var(--vscode-button-secondaryBackground);
+                color: var(--vscode-button-secondaryForeground);
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Manipuladores de eventos para os botões
+        document.getElementById('confirmUndoYes').addEventListener('click', () => {
             console.log("[Webview] Undo confirmed, sending message to extension.");
-            vscode.postMessage({ command: 'undoLastGeneration' });
-        }
+            vscode.postMessage({ command: WebviewCommands.UNDO_LAST_GENERATION, skipConfirmation: true });
+            document.body.removeChild(confirmDialog);
+            document.head.removeChild(style);
+        });
+        
+        document.getElementById('confirmUndoNo').addEventListener('click', () => {
+            console.log("[Webview] Undo canceled.");
+            document.body.removeChild(confirmDialog);
+            document.head.removeChild(style);
+        });
     });
     refreshTreeButton?.addEventListener('click', () => {
         console.log("[Webview] Refresh button clicked, requesting structure.");
@@ -255,9 +328,9 @@ import { renderTree } from './treeView.js';
         const selectedFilePaths = getSelectedFilePaths(fileTree);
         if (selectedFilePaths.length > 0) {
             console.log(`[Webview] Copy selected button clicked. Selected paths: ${selectedFilePaths.length}`);
-            vscode.postMessage({ command: 'copySelectedFilesContent', paths: selectedFilePaths });
+            vscode.postMessage({ command: WebviewCommands.COPY_SELECTED_FILES_CONTENT, paths: selectedFilePaths });
         } else {
-            vscode.postMessage({ command: 'showInfo', text: 'No files selected for copying.' });
+            vscode.postMessage({ command: WebviewCommands.SHOW_INFO, text: 'No files selected for copying.' });
         }
     });
     document.addEventListener('click', (event) => {
@@ -464,17 +537,17 @@ import { renderTree } from './treeView.js';
         copyTextBtn.onclick = () => {
             const selectedFilePaths = getSelectedFilePaths(fileTree);
             if (selectedFilePaths.length > 0) {
-                vscode.postMessage({ command: 'copySelectedFiles', paths: selectedFilePaths });
+                vscode.postMessage({ command: WebviewCommands.COPY_SELECTED_FILES_CONTENT, paths: selectedFilePaths });
             } else {
-                vscode.postMessage({ command: 'showInfo', text: 'No files selected for copying.' });
+                vscode.postMessage({ command: WebviewCommands.SHOW_INFO, text: 'No files selected for copying.' });
             }
         };
         copyFileBtn.onclick = () => {
             const selectedFilePaths = getSelectedFilePaths(fileTree);
             if (selectedFilePaths.length > 0) {
-                vscode.postMessage({ command: 'copyFilesToClipboard', paths: selectedFilePaths });
+                vscode.postMessage({ command: WebviewCommands.COPY_FILES_TO_CLIPBOARD, paths: selectedFilePaths });
             } else {
-                vscode.postMessage({ command: 'showInfo', text: 'No files selected for copying.' });
+                vscode.postMessage({ command: WebviewCommands.SHOW_INFO, text: 'No files selected for copying.' });
             }
         };
     }

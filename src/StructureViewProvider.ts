@@ -93,8 +93,8 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
                                           });
                                           return;
                     case WebviewCommands.UNDO_LAST_GENERATION:
-                        console.log(`[StructureViewProvider] Received 'undoLastGeneration' message.`);
-                                          vscode.commands.executeCommand('buildy.undoLastGeneration', undefined, this._view?.webview);
+                        console.log(`[StructureViewProvider] Received 'undoLastGeneration' message. skipConfirmation: ${message.skipConfirmation}`);
+                                          vscode.commands.executeCommand('buildy.undoLastGeneration', undefined, this._view?.webview, message.skipConfirmation);
                         return;
                     case WebviewCommands.SAVE_ADDITIONAL_PROMPT:
                         if (typeof message.text === 'string') {

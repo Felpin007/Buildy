@@ -31,9 +31,11 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(
         vscode.commands.registerCommand('buildy.undoLastGeneration',
-                     (checkpointHash?: string) => {
-                         const webview = structureProvider.getWebviewView()?.webview;
-                         commands.undoLastGenerationCommand(context, structureProvider, checkpointHash, webview);
+                     (checkpointHash?: string, webview?: vscode.Webview, skipConfirmation?: boolean) => {
+                         if (!webview) {
+                             webview = structureProvider.getWebviewView()?.webview;
+                         }
+                         commands.undoLastGenerationCommand(context, structureProvider, checkpointHash, webview, skipConfirmation);
                      }
         )
     );
