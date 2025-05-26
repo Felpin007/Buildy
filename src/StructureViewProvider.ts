@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { getHtmlForWebview } from './webview/htmlContent';
 import { getNonce } from './utils/nonce';
 import { getWorkspaceTree } from './services/fileSystemService';
 import * as constants from './constants';
+import { WebviewCommands } from './webview/webviewCommands';
 export class StructureViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'structureView';
     private _view?: vscode.WebviewView;
@@ -52,7 +54,10 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
             async message => {
                 console.log(`[StructureViewProvider] Received message: ${message.command}`);
                 switch (message.command) {
-                    case 'generateStructure':
+                    case WebviewCommands.GET_PROMPT_CONTENT:
+                        this.sendPromptContent(message.platform);
+                        return;
+                    case WebviewCommands.GENERATE_STRUCTURE:
                         console.log(`[StructureViewProvider] Received 'generateStructure' message from webview. Executing command...`);
                         vscode.commands.executeCommand('buildy.processPastedStructure', message.text, this._view?.webview);
                         return;
@@ -119,15 +124,6 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
                     case 'showInfo':
                          vscode.window.showInformationMessage(message.text);
                          return;
-                    case 'webviewReady':
-                        console.log("[StructureViewProvider] Webview is ready. Checking for workspace...");
-                        if (this._currentWorkspaceRoot) {
-                             console.log("[StructureViewProvider] Workspace found, requesting initial structure.");
-                            this.refreshFileTree();
-                        } else {
-                            console.log("[StructureViewProvider] No workspace found on webview ready.");
-                            this._view?.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
-                        }
                         this.sendUndoState();
                         this.sendAdditionalPromptToWebview();
                         return;
@@ -167,7 +163,49 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
         if (!this._view) return;
         const savedPrompt = this._context.globalState.get<string>(constants.ADDITIONAL_PROMPT_KEY, '');
         console.log(`[StructureViewProvider.sendAdditionalPromptToWebview] Sending additional prompt: "${savedPrompt}"`);
-        this._view.webview.postMessage({ command: 'updateAdditionalPrompt', text: savedPrompt });
+        this._view.webview.postMessage({ command: WebviewCommands.UPDATE_ADDITIONAL_PROMPT, text: savedPrompt });
+    }
+    
+    /**
+     * Carrega o conteúdo do prompt de um arquivo e envia para o webview
+     * @param platform Plataforma para a qual o prompt deve ser carregado ('windows' ou 'linux')
+     */
+    private sendPromptContent(platform: string) {
+        if (!this._view) return;
+        
+        try {
+            const promptFilePath = path.join(
+                this._extensionUri.fsPath, 
+                'media', 
+                'webview', 
+                'prompts', 
+                platform === 'windows' ? 'windows.txt' : 'linux.txt'
+            );
+            
+            console.log(`[StructureViewProvider.sendPromptContent] Carregando prompt para ${platform} de: ${promptFilePath}`);
+            
+            if (fs.existsSync(promptFilePath)) {
+                const content = fs.readFileSync(promptFilePath, 'utf8');
+                this._view.webview.postMessage({ 
+                    command: WebviewCommands.PROMPT_CONTENT, 
+                    platform: platform, 
+                    content: content 
+                });
+                console.log(`[StructureViewProvider.sendPromptContent] Prompt para ${platform} enviado com sucesso.`);
+            } else {
+                console.error(`[StructureViewProvider.sendPromptContent] Arquivo de prompt não encontrado: ${promptFilePath}`);
+                this._view.webview.postMessage({ 
+                    command: 'showError', 
+                    text: `Erro ao carregar prompt para ${platform}: arquivo não encontrado.` 
+                });
+            }
+        } catch (error) {
+            console.error(`[StructureViewProvider.sendPromptContent] Erro ao carregar prompt para ${platform}:`, error);
+            this._view.webview.postMessage({ 
+                command: 'showError', 
+                text: `Erro ao carregar prompt para ${platform}: ${error instanceof Error ? error.message : String(error)}` 
+            });
+        }
     }
     public async refreshFileTree() {
          if (!this._view) {
