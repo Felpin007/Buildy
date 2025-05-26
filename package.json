@@ -1,0 +1,88 @@
+{
+  "name": "buildy",
+  "displayName": "Buildy",
+  "description": "Automate codebase changes using AI-generated instructions. Paste structured responses (XML-like format) to create/modify files, run terminal commands, and manage your project structure. Includes undo functionality (requires Git) and file browsing.",
+  "publisher": "FelpolinColorado",
+  "version": "0.1.2",
+  "license": "UNLICENSED",
+  "homepage": "https://github.com/Felpin007/Buildy",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Felpin007/Buildy.git"
+  },
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "buildy-view-container",
+          "title": "Buildy",
+          "icon": "images/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "buildy-view-container": [
+        {
+          "id": "structureView",
+          "name": "Structure",
+          "type": "webview",
+          "contextualTitle": "Buildy",
+          "icon": "images/icon.png"
+        },
+        {
+          "id": "copySystemView",
+          "name": "Copy System",
+          "type": "webview",
+          "contextualTitle": "Buildy",
+          "icon": "images/icon.png"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Buildy",
+      "properties": {
+        "buildy.enableCheckpoints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the experimental checkpoint/undo feature using a hidden shadow Git repository. Requires Git to be installed."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/lodash": "^4.17.16",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.17.50",
+    "@types/vscode": "^1.99.0",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.23.0",
+    "fs-extra": "^11.3.0",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@vscode/codicons": "^0.0.36",
+    "globby": "^14.0.1",
+    "lodash": "^4.17.21",
+    "simple-git": "^3.27.0"
+  }
+}

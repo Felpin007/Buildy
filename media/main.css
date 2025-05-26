@@ -1,0 +1,632 @@
+/* --- media/main.css --- */
+
+/* media/main.css */
+
+body, html {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevent scrollbars if content fits */
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    color: var(--vscode-foreground);
+    background-color: var(--vscode-sideBar-background); /* Match sidebar background */
+}
+
+.content-wrapper {
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent wrapper from causing scroll */
+}
+
+/* --- Generator Section --- */
+.generator-section {
+    padding: 4px 12px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    /* height: 50%; REMOVED fixed height */
+    min-height: 242px; /* Keep minimum space */
+    box-sizing: border-box;
+    flex-shrink: 1; /* Allow shrinking */
+    flex-basis: 50%; /* Suggest starting at 50%, but allow flex */
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between; /* Pushes title left, buttons right */
+    align-items: center;
+    margin-bottom: 8px; /* Space below header */
+    flex-wrap: wrap; /* Allow buttons to wrap if needed */
+    gap: 8px; /* Gap between title and button container */
+}
+
+.generator-section h2 {
+    font-size: 1.04em;
+    margin: 0; /* Remove default margin */
+    font-weight: bold;
+    margin-bottom: 0px;
+    flex-shrink: 0; /* Prevent title from shrinking */
+}
+
+/* --- MODIFICATION START: Container for prompt buttons --- */
+.prompt-buttons-container {
+    display: flex;
+    gap: 5px; /* Space between prompt buttons */
+    flex-shrink: 0; /* Prevent container shrinking */
+    align-items: center; /* Align icon with buttons */
+}
+/* --- MODIFICATION END --- */
+
+/* --- MODIFICATION START: Style for settings icon button --- */
+.prompt-settings-button {
+    background: none;
+    border: none;
+    color: var(--vscode-icon-foreground);
+    cursor: pointer;
+    padding: 0px; /* Small padding */
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0px; /* Space before the icon */
+}
+
+.prompt-settings-button:hover {
+    background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.prompt-settings-button .codicon {
+    font-size: 16px; /* Adjust icon size */
+}
+/* --- MODIFICATION END --- */
+
+
+.generator-section label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: var(--vscode-font-size);
+}
+
+.generator-section textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    font-family: var(--vscode-editor-font-family); /* Use editor font */
+    font-size: var(--vscode-editor-font-size);
+    color: var(--vscode-input-foreground);
+    background-color: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder, transparent));
+    padding: 4px;
+    resize: vertical;
+    min-height: 100px;
+    /* Allow textarea to grow and shrink within its flex container */
+    flex-grow: 1;
+    flex-shrink: 1; /* Allow shrinking */
+    /* height: auto; /* Let flexbox determine height */
+}
+
+.generator-section textarea:focus {
+    border-color: var(--vscode-focusBorder);
+    outline: none;
+}
+
+/* --- MODIFICATION START: Use class selector for prompt buttons --- */
+.copy-prompt-button {
+    /* Style similar to other buttons but maybe smaller/less prominent */
+    padding: 3px 8px;
+    font-size: 0.9em;
+    background-color: var(--vscode-button-secondaryBackground, #555); /* Use secondary or default */
+    color: var(--vscode-button-secondaryForeground, #fff);
+    border: 1px solid var(--vscode-button-border, transparent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0; /* Prevent button from shrinking */
+}
+.copy-prompt-button:hover {
+    background-color: var(--vscode-button-secondaryHoverBackground, #666);
+}
+/* --- MODIFICATION END --- */
+
+
+/* --- MODIFICATION START: Prompt Settings Section Styles --- */
+.prompt-settings-section {
+    display: none; /* Hidden by default */
+    padding: 8px;
+    background-color: var(--vscode-input-background); /* Match textarea background */
+    border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder, transparent));
+    border-radius: 3px;
+    margin-top: 5px; /* Space below header */
+    margin-bottom: 10px; /* Space before main action buttons */
+    box-shadow: var(--vscode-widget-shadow);
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    gap: 8px;
+}
+
+.prompt-settings-section label {
+    font-size: 0.9em;
+    margin-bottom: 3px;
+    color: var(--vscode-descriptionForeground);
+}
+
+.prompt-settings-section input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    color: var(--vscode-input-foreground);
+    background-color: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder, transparent));
+    padding: 4px;
+    font-family: var(--vscode-editor-font-family);
+    font-size: var(--vscode-editor-font-size);
+}
+
+.prompt-settings-section input[type="text"]:focus {
+    border-color: var(--vscode-focusBorder);
+    outline: none;
+}
+
+.prompt-settings-section button {
+    align-self: flex-start; /* Align button to the left */
+    padding: 3px 8px;
+    font-size: 0.9em;
+    margin-top: 8px; /* Space above button */
+}
+/* --- MODIFICATION END --- */
+
+
+/* Action Buttons Container */
+.action-buttons {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    margin-bottom: 10px; /* Space below the button row */
+    flex-shrink: 0; /* Prevent container from shrinking */
+}
+
+.generator-section button#generateButton { /* Be more specific */
+    color: var(--vscode-button-foreground);
+    background-color: var(--vscode-button-background);
+    border: 1px solid var(--vscode-button-border, transparent);
+    padding: 5px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    /* width: 100%; REMOVED - Let flexbox handle width */
+    justify-content: center;
+    /* margin-bottom: 10px; REMOVED - Handled by container */
+    flex-grow: 1; /* Allow generate button to take more space if needed */
+}
+
+.generator-section button#generateButton:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+/* Undo Button Styles */
+.generator-section button#undoButton {
+    color: var(--vscode-button-secondaryForeground); /* Use secondary colors */
+    background-color: var(--vscode-button-secondaryBackground);
+    border: 1px solid var(--vscode-button-border, transparent);
+    padding: 5px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: center;
+    flex-shrink: 0; /* Prevent undo button from shrinking too much */
+}
+
+.generator-section button#undoButton:hover {
+    background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.generator-section button#undoButton:disabled {
+    background-color: var(--vscode-button-secondaryBackground); /* Keep background */
+    color: var(--vscode-disabledForeground); /* Use disabled text color */
+    opacity: 0.6; /* Make it look faded */
+    cursor: not-allowed; /* Indicate it's not clickable */
+}
+
+
+/* --- Progress Section --- */
+.progress-container {
+    margin-top: -10px; /* Keep margin */
+    border-top: 1px solid var(--vscode-sideBar-border);
+    padding: 10px 12px 5px 12px; /* Adjust padding */
+    flex-grow: 1; /* Allow growing */
+    flex-shrink: 1; /* Allow shrinking */
+    flex-basis: 50%; /* Suggest starting at 50% height */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent container itself from overflowing (remove duplicate) */
+}
+
+.progress-container h3 {
+    margin: 0 0 8px 0;
+    font-size: 1em;
+    font-weight: bold;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.progress-list {
+    flex-grow: 1; /* Allow list to take available space within its flex parent */
+    overflow-y: auto; /* Enable vertical scrolling ONLY for the list */
+    padding-right: 5px; /* Space for scrollbar */
+    font-family: var(--vscode-editor-font-family); /* Use editor font for monospaced look */
+    font-size: var(--vscode-editor-font-size);
+    line-height: 1.5;
+}
+
+.progress-item {
+    padding: 3px 5px;
+    margin-bottom: 3px;
+    border-radius: 3px;
+    white-space: pre-wrap; /* Wrap long lines */
+    word-break: break-all; /* Break long words/paths */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.progress-item .diff-icon {
+    cursor: pointer;
+    margin-left: auto; /* Push icon to the right */
+    padding-left: 8px; /* Add some space before the icon */
+    color: var(--vscode-textLink-foreground); /* Use link color */
+    flex-shrink: 0;
+}
+
+.progress-item .diff-icon:hover {
+    color: var(--vscode-textLink-activeForeground);
+}
+
+.progress-item .codicon {
+    flex-shrink: 0; /* Prevent icon shrinking */
+}
+
+/* Style based on progress type */
+.progress-item.info {
+    color: var(--vscode-descriptionForeground);
+}
+.progress-item.command .codicon { color: var(--vscode-terminal-ansiCyan); }
+.progress-item.dir .codicon { color: var(--vscode-terminal-ansiMagenta); }
+/* --- MODIFICATION START: Specific icon colors for file writing/editing --- */
+.progress-item.file.writing .codicon { color: var(--vscode-terminal-ansiBlue); } /* Blue for Writing */
+.progress-item.file.editing .codicon { color: var(--vscode-terminal-ansiGreen); } /* Green for Editing */
+/* Fallback for file items without writing/editing class (shouldn't happen with current logic) */
+.progress-item.file:not(.writing):not(.editing) .codicon { color: var(--vscode-terminal-ansiGreen); }
+/* --- MODIFICATION END --- */
+.progress-item.success {
+    color: var(--vscode-terminal-ansiGreen);
+    font-weight: bold;
+}
+.progress-item.error {
+    color: var(--vscode-errorForeground);
+    background-color: rgba(255, 0, 0, 0.1); /* Slight red background */
+    font-weight: bold;
+}
+.progress-item.error .codicon { color: var(--vscode-errorForeground); }
+/* Style for reverted items */
+.progress-item.reverted .codicon { color: var(--vscode-terminal-ansiYellow); } /* Yellow for reverted */
+
+
+/* --- Divider --- */
+.section-divider {
+    border: none;
+    border-top: 1px solid var(--vscode-sideBar-border);
+    margin: 0;
+}
+
+/* --- Explorer Section --- */
+.explorer-section {
+    flex-grow: 1; /* Take remaining vertical space */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent this section from overflowing */
+    padding-bottom: 5px; /* Space at the bottom */
+}
+
+.explorer-header {
+    display: flex;
+    align-items: center;
+    padding: 3px 12px;
+    border-bottom: 1px solid var(--vscode-sideBar-border);
+    position: relative; /* For absolute positioning of actions */
+    flex-shrink: 0; /* Prevent header from shrinking */
+    padding-bottom: 7px;
+}
+
+.explorer-title {
+    flex-grow: 1;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 50px; /* Space for actions */
+}
+.explorer-actions {
+    display: flex; /* Always visible */
+    gap: 4px; /* Added gap here */
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--vscode-sideBar-background); /* Match background */
+    border-radius: 3px;
+    /* box-shadow: 0 0 4px rgba(0,0,0,0.1); */ /* Optional shadow */
+}
+
+.explorer-actions button {
+    background: none;
+    border: none;
+    color: var(--vscode-icon-foreground);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 3px;
+    display: flex; /* Align icon */
+    align-items: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.explorer-actions button:hover {
+    background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+
+.explorer-actions button.hidden {
+    display: none;
+}
+
+.file-tree-container {
+    flex-grow: 1; /* Allow container to grow */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 5px 0px 5px 15px; /* Padding around the tree */
+}
+
+#loadingIndicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 0;
+    color: var(--vscode-descriptionForeground);
+}
+
+#treePlaceholder {
+    padding: 10px 0;
+    color: var(--vscode-descriptionForeground);
+}
+
+/* --- File Tree Styling --- */
+.file-tree {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    margin-left: -24px;
+}
+
+.file-tree-item {
+    position: relative; /* Needed for absolute positioning of pseudo-elements */
+    --indent-level: 0; /* Default indent level */
+    padding-left: calc(var(--indent-level, 0) * 18px); /* Apply indent to the LI */
+    /* margin-left: 10px; Remove base margin, rely on padding */
+}
+
+.file-tree-item[aria-expanded]::before {
+    content: '';
+    position: absolute;
+    top: 40px;
+    left: 20px;
+    width: 1px;
+    height: calc(100% - 44px);
+    background-color: var(--vscode-tree-indentGuidesStroke);
+    pointer-events: none;
+}
+
+/* Stop the vertical line for the last item in any list */
+.file-tree-item:last-child[aria-expanded]::before {
+    height: 0;
+}
+
+/* Horizontal connector for expanded items */
+.file-tree-item.expanded > .children > .file-tree-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20px;
+    width: 1px;
+    height: 22px;
+    background-color: var(--vscode-tree-indentGuidesStroke);
+}
+
+
+.node-content {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+    /* padding-left removed, handled by parent LI */
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 22px; /* Standard VS Code tree item height */
+    line-height: 22px;
+    margin-left: 12px; /* Add margin to push content right, leaving space for tree line */
+}
+
+.node-content:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+/* Active file highlight */
+.file-tree-item.active-file > .node-content {
+    background-color: var(--vscode-list-focusBackground);
+}
+.file-tree-item.active-file > .node-content:hover {
+    background-color: var(--vscode-list-focusBackground); /* Keep focus color on hover */
+}
+
+
+.node-chevron,
+.node-icon,
+.node-checkbox,
+.node-label {
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.node-chevron {
+    width: 16px; /* Make chevron area smaller */
+    text-align: center;
+    color: var(--vscode-icon-foreground);
+    flex-shrink: 0;
+    margin-right: 2px; /* Space before icon */
+}
+
+.node-icon {
+    width: 20px; /* Icon area width */
+    text-align: center;
+    color: var(--vscode-icon-foreground);
+    flex-shrink: 0;
+    margin-right: 4px; /* Space after icon */
+}
+
+/* --- Improved Checkbox Styling --- */
+.node-checkbox {
+    appearance: none; /* Remove default browser styling */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    margin: 0; /* Reset margin */
+    flex-shrink: 0;
+    margin-right: 6px; /* Space after checkbox */
+    width: 16px; /* Standard size */
+    height: 16px;
+    border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder, #6c6c6c));
+    background-color: var(--vscode-input-background, #3c3c3c);
+    border-radius: 3px;
+    display: inline-block;
+    vertical-align: middle; /* Better alignment */
+    position: relative; /* For pseudo-elements */
+    cursor: pointer;
+    transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
+}
+
+.node-checkbox:focus {
+    outline: none;
+    border-color: var(--vscode-focusBorder); /* Highlight focus */
+    box-shadow: 0 0 0 1px var(--vscode-focusBorder);
+}
+
+.node-checkbox:hover {
+     border-color: var(--vscode-inputOption-activeBorder, var(--vscode-focusBorder));
+}
+
+/* Checked state */
+.node-checkbox:checked {
+    background-color: var(--vscode-button-background, #0e639c); /* Use button background for checked */
+    border-color: var(--vscode-button-background, #0e639c);
+}
+
+/* Checkmark using pseudo-element */
+.node-checkbox:checked::before {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 4px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--vscode-button-foreground, #ffffff); /* Use button text color */
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Indeterminate state */
+.node-checkbox:indeterminate {
+    background-color: var(--vscode-button-background, #0e639c); /* Same background as checked */
+    border-color: var(--vscode-button-background, #0e639c);
+}
+
+/* Indeterminate indicator (horizontal line) */
+.node-checkbox:indeterminate::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 3px; /* Adjust positioning */
+    right: 3px;
+    height: 2px;
+    background-color: var(--vscode-button-foreground, #ffffff); /* Use button text color */
+    transform: translateY(-50%);
+}
+/* --- End Improved Checkbox Styling --- */
+
+.node-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-grow: 1;
+    /* padding-left: 4px; REMOVE */
+}
+
+
+/* Children list - hidden by default */
+.file-tree-item > .children {
+    display: none;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+/* Show children when expanded */
+.file-tree-item.expanded > .children {
+    display: block;
+}
+
+/* --- Context Menu --- */
+#explorerContextMenu {
+    position: fixed; /* Use fixed to position relative to viewport */
+    background-color: var(--vscode-menu-background);
+    border: 1px solid var(--vscode-menu-border);
+    box-shadow: var(--vscode-widget-shadow);
+    border-radius: 4px;
+    padding: 4px 0;
+    min-width: 180px;
+    z-index: 1000;
+    display: none; /* Hidden by default */
+}
+
+#explorerContextMenu.active {
+    display: block;
+}
+
+#explorerContextMenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#explorerContextMenu li {
+    padding: 5px 12px;
+    cursor: pointer;
+    color: var(--vscode-menu-foreground);
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+}
+
+#explorerContextMenu li:hover {
+    background-color: var(--vscode-menu-selectionBackground);
+    color: var(--vscode-menu-selectionForeground);
+}
+
+#explorerContextMenu li i.codicon {
+    font-size: 16px; /* Ensure icon size is appropriate */
+}
+
+/* Utility class to hide elements */
+.hidden {
+    display: none !important; /* Use important to override potential conflicts */
+}
