@@ -5,6 +5,7 @@ import { StructureViewProvider } from '../StructureViewProvider';
 import { Operation, parseCustomFormat } from '../services/parserService';
 import { generateAndExecuteScriptAsTask } from '../services/taskService';
 import CheckpointTracker from '../services/checkpoint/CheckpointTracker';
+import { WebviewCommands } from '../webview/webviewCommands';
 /**
  * Processa o texto colado pelo usuário e executa as operações de geração de estrutura
  * 
@@ -27,7 +28,7 @@ export async function processPastedStructureCommand(
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
               vscode.window.showErrorMessage('Nenhuma pasta de workspace aberta.');
-        webview?.postMessage({ command: 'generationFinished', success: false });
+        webview?.postMessage({ command: WebviewCommands.GENERATION_FINISHED, success: false });
         return;
     }
     const workspaceRootUri = workspaceFolders[0].uri;
@@ -44,7 +45,7 @@ export async function processPastedStructureCommand(
             }
         } catch (trackerError) {
                      vscode.window.showWarningMessage('Falha ao inicializar sistema de checkpoint. A funcionalidade de desfazer não estará disponível para esta operação.');
-             if (webview) { webview.postMessage({ command: 'updateUndoState', canUndo: false }); }
+             if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false }); }
         }
         if (checkpointTracker) {
             try {
@@ -53,22 +54,22 @@ export async function processPastedStructureCommand(
                 if (commitResult) {
                     preGenerationCheckpointHash = commitResult;
                     await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, preGenerationCheckpointHash);
-                    if (webview) { webview.postMessage({ command: 'updateUndoState', canUndo: true }); }
+                    if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: true }); }
                 } else {
                     await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, undefined);
                     preGenerationCheckpointHash = null;
                                    vscode.window.showWarningMessage('Falha ao criar checkpoint pré-geração. Desfazer não estará disponível.');
-                    if (webview) { webview.postMessage({ command: 'updateUndoState', canUndo: false }); }
+                    if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false }); }
                 }
             } catch (commitError) {
                             vscode.window.showErrorMessage(`Falha ao criar checkpoint pré-geração: ${commitError instanceof Error ? commitError.message : String(commitError)}`);
                 await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, undefined);
                 preGenerationCheckpointHash = null;
-                if (webview) { webview.postMessage({ command: 'updateUndoState', canUndo: false }); }
+                if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false }); }
             }
         } else {
              await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, undefined);
-             if (webview) { webview.postMessage({ command: 'updateUndoState', canUndo: false }); }
+             if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false }); }
         }
         await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
         let cleanedInput = rawInputText.trim();
@@ -103,11 +104,11 @@ export async function processPastedStructureCommand(
             } else if (generationSuccess && !checkpointTracker) {
             }
              if (webview) {
-                 webview.postMessage({ command: 'generationFinished', success: generationSuccess });
+                 webview.postMessage({ command: WebviewCommands.GENERATION_FINISHED, success: generationSuccess });
              } else {
              }
             if (webview && taskProgress.length > 0) {
-                webview.postMessage({ command: 'generationProgress', progress: taskProgress });
+                webview.postMessage({ command: WebviewCommands.GENERATION_PROGRESS, progress: taskProgress });
             } else if (taskProgress.length > 0) {
             }
             if (preGenerationCheckpointHash) {
@@ -130,7 +131,7 @@ export async function processPastedStructureCommand(
             if (preGenerationCheckpointHash && context.workspaceState.get(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY) === preGenerationCheckpointHash) {
                  await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, undefined);
                              vscode.window.showInformationMessage(`Checkpoint ${preGenerationCheckpointHash.substring(0,7)} foi criado, mas nenhuma operação foi executada.`);
-                  if (webview) { webview.postMessage({ command: 'updateUndoState', canUndo: false }); }
+                  if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false }); }
             }
             await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
         }
@@ -140,13 +141,13 @@ export async function processPastedStructureCommand(
         await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
         generationSuccess = false;
         if (webview) {
-             webview.postMessage({ command: 'generationFinished', success: false });
-             webview.postMessage({ command: 'updateUndoState', canUndo: false });
+             webview.postMessage({ command: WebviewCommands.GENERATION_FINISHED, success: false });
+             webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false });
         }
     } finally {
          const finalPreGenCheckpointHash = context.workspaceState.get<string>(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY);
          if (webview) {
-             webview.postMessage({ command: 'updateUndoState', canUndo: !!finalPreGenCheckpointHash });
+             webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: !!finalPreGenCheckpointHash });
          }
          vscode.commands.executeCommand('buildy.refreshCopySystemView');
     }

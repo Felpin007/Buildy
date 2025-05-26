@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { getHtmlForWebview } from './webview/htmlContent';
 import { getWorkspaceTree } from './services/fileSystemService';
+import { WebviewCommands } from './webview/webviewCommands';
 /**
  * Provedor do sistema de cópia de arquivos da extensão Buildy.
  * Gerencia a interface que permite ao usuário navegar na estrutura de arquivos,
@@ -31,13 +32,13 @@ export class CopySystemProvider implements vscode.WebviewViewProvider {
             this._currentWorkspaceRoot = newRoot;
             console.log(`[CopySystemProvider] Pastas do workspace alteradas. Nova raiz: ${this._currentWorkspaceRoot?.fsPath ?? 'Nenhuma'}`);
             if (this._view?.visible) {
-                this._view?.webview.postMessage({ command: 'workspaceChanged' });
+                this._view?.webview.postMessage({ command: WebviewCommands.WORKSPACE_CHANGED });
                 if (rootChanged && this._currentWorkspaceRoot) {
                     console.log("[CopySystemProvider] Raiz alterada, atualizando árvore.");
                     this.refreshFileTree();
                 } else if (!this._currentWorkspaceRoot) {
                      console.log("[CopySystemProvider] Workspace fechado, visualização notificada.");
-                     this._view?.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
+                     this._view?.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'No workspace open' });
                 }
             }
         });
@@ -68,21 +69,21 @@ export class CopySystemProvider implements vscode.WebviewViewProvider {
             async (message: any) => {
                 console.log(`[CopySystemProvider] Mensagem recebida: ${message.command}`);
                 switch (message.command) {
-                    case 'getStructure':
+                    case WebviewCommands.GET_STRUCTURE:
                         if (this._currentWorkspaceRoot) {
                             await this.refreshFileTree();
                         } else {
                              if (this._view?.visible) {
                                  vscode.window.showWarningMessage('Nenhuma pasta de workspace aberta.');
                              }
-                             this._view?.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
+                             this._view?.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'No workspace open' });
                         }
                         return;
-                    case 'copySelectedFilesContent':
+                    case WebviewCommands.COPY_SELECTED_FILES_CONTENT:
                          console.log("[CopySystemProvider] Recebido 'copySelectedFilesContent', executando comando...");
                          vscode.commands.executeCommand('buildy.copySelectedFilesContent', message.paths);
                         return;
-                    case 'openFile':
+                    case WebviewCommands.OPEN_FILE:
                         if (message.path && this._currentWorkspaceRoot) {
                             try {
                                 const fileUri = vscode.Uri.joinPath(this._currentWorkspaceRoot, message.path.replace(/\\/g, '/'));
@@ -102,23 +103,23 @@ export class CopySystemProvider implements vscode.WebviewViewProvider {
                              vscode.window.showWarningMessage('Não foi possível determinar o arquivo a ser aberto.');
                         }
                         return;
-                    case 'showError':
+                    case WebviewCommands.SHOW_ERROR:
                         vscode.window.showErrorMessage(message.text);
                         return;
-                    case 'showInfo':
+                    case WebviewCommands.SHOW_INFO:
                          vscode.window.showInformationMessage(message.text);
                          return;
-                    case 'webviewReady':
+                    case WebviewCommands.WEBVIEW_READY:
                         console.log("[CopySystemProvider] Webview está pronto. Verificando workspace...");
                         if (this._currentWorkspaceRoot) {
                              console.log("[CopySystemProvider] Workspace encontrado, solicitando estrutura inicial.");
                             this.refreshFileTree();
                         } else {
                             console.log("[CopySystemProvider] Nenhum workspace encontrado ao iniciar webview.");
-                            this._view?.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
+                            this._view?.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'No workspace open' });
                         }
                         return;
-                    case 'copyFilesToClipboard':
+                    case WebviewCommands.COPY_FILES_TO_CLIPBOARD:
                         if (this._currentWorkspaceRoot && Array.isArray(message.paths) && message.paths.length > 0) {
                             try {
                                 const absPaths = message.paths.map((relPath: string) =>
@@ -186,7 +187,7 @@ Start-Sleep -Milliseconds 200
                   this.refreshFileTree();
              } else if (webviewView.visible && !this._currentWorkspaceRoot) {
                  console.log("[CopySystemProvider] Visualização ficou visível, sem workspace.");
-                 this._view?.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
+                 this._view?.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'No workspace open' });
              } else {
                  console.log("[CopySystemProvider] Visualização ficou oculta.");
              }
@@ -204,18 +205,18 @@ Start-Sleep -Milliseconds 200
          }
          if (!this._currentWorkspaceRoot) {
              console.log("[CopySystemProvider.refreshFileTree] Nenhum workspace aberto, enviando sinal de limpeza.");
-             this._view.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
+             this._view.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'No workspace open' });
              return;
          };
          console.log(`[CopySystemProvider.refreshFileTree] INICIANDO Atualização para: ${this._currentWorkspaceRoot.fsPath}`);
-         this._view.webview.postMessage({ command: 'setLoading', isLoading: true });
+         this._view.webview.postMessage({ command: WebviewCommands.SET_LOADING, isLoading: true });
          console.log(`[CopySystemProvider.refreshFileTree] Enviado setLoading: true`);
          try {
              console.log(`[CopySystemProvider.refreshFileTree] Chamando getWorkspaceTree para raiz...`);
              const treeData = await getWorkspaceTree(this._currentWorkspaceRoot, '');
              console.log(`[CopySystemProvider.refreshFileTree] getWorkspaceTree retornou. Dados da árvore obtidos, enviando para webview.`);
              this._view.webview.postMessage({
-                 command: 'structureData',
+                 command: WebviewCommands.STRUCTURE_DATA,
                  data: treeData,
                  workspaceFolderName: vscode.workspace.workspaceFolders?.[0]?.name,
                  workspaceFolderPath: this._currentWorkspaceRoot?.fsPath,
@@ -224,14 +225,14 @@ Start-Sleep -Milliseconds 200
              console.error("[CopySystemProvider.refreshFileTree] Bloco CATCH: Erro ao obter árvore do workspace:", error);
              if (error instanceof vscode.FileSystemError && error.code === 'FileNotFound' && this._currentWorkspaceRoot && error.message.includes(this._currentWorkspaceRoot.fsPath)) {
                  console.warn("[CopySystemProvider.refreshFileTree] CATCH block: Workspace root likely removed during refresh.");
-                 this._view.webview.postMessage({ command: 'structureData', data: null, error: 'No workspace open' });
+                 this._view.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'No workspace open' });
              } else {
                  vscode.window.showErrorMessage(`Erro ao ler a estrutura do workspace: ${error instanceof Error ? error.message : String(error)}`);
-                 this._view.webview.postMessage({ command: 'structureData', data: null, error: 'Failed to read workspace' });
+                 this._view.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'Failed to read workspace' });
              }
          } finally {
              console.log(`[CopySystemProvider.refreshFileTree] FINALLY block: Posting setLoading: false`);
-             this._view.webview.postMessage({ command: 'setLoading', isLoading: false });
+             this._view.webview.postMessage({ command: WebviewCommands.SET_LOADING, isLoading: false });
              console.log(`[CopySystemProvider.refreshFileTree] FINALLY block: Posted setLoading: false`);
          }
     }

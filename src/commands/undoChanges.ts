@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as constants from '../constants';
 import { StructureViewProvider } from '../StructureViewProvider';
 import CheckpointTracker, { DiffEntry } from '../services/checkpoint/CheckpointTracker'; 
+import { WebviewCommands } from '../webview/webviewCommands';
 /**
  * Desfaz a última geração de estrutura revertendo para um checkpoint anterior
  * 
@@ -89,11 +90,11 @@ export async function undoLastGenerationCommand(
                        status: 'Revertido' 
                    }));
                    webview.postMessage({
-                       command: 'undoProgress',
+                       command: WebviewCommands.UNDO_PROGRESS,
                        progress: undoProgress,
                        success: true 
                    });
-                   webview.postMessage({ command: 'undoFinished', success: true }); 
+                   webview.postMessage({ command: WebviewCommands.UNDO_FINISHED, success: true }); 
                    console.log("[undoCommand] Enviadas mensagens de progresso e conclusão de desfazer para webview.");
                } else {
                                     vscode.window.showInformationMessage('Arquivos revertidos com sucesso para o checkpoint!');
@@ -103,7 +104,7 @@ export async function undoLastGenerationCommand(
         console.log("[undoCommand] Limpas chaves de checkpoint de geração após desfazer bem-sucedido.");
         if (webview) {
             console.log("[undoCommand] Enviando updateUndoState(false) final após desfazer bem-sucedido.");
-            webview.postMessage({ command: 'updateUndoState', canUndo: false });
+            webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false });
         }
         console.log("[undoCommand] Disparando atualização da visualização do Sistema de Cópia após desfazer bem-sucedido...");
         vscode.commands.executeCommand('buildy.refreshCopySystemView');
@@ -116,8 +117,8 @@ export async function undoLastGenerationCommand(
             await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
             console.log("[undoCommand] Limpas chaves de checkpoint de geração após erro ignorado durante desfazer.");
             if (webview) {
-                webview.postMessage({ command: 'undoFinished', success: true });
-                webview.postMessage({ command: 'updateUndoState', canUndo: false });
+                webview.postMessage({ command: WebviewCommands.UNDO_FINISHED, success: true });
+                webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false });
                 console.log("[undoCommand] Enviadas mensagens de sucesso para webview após erro ignorado.");
            } else {
                 console.log('[undoCommand] Arquivos revertidos com sucesso para o checkpoint! (Notificação suprimida)');
@@ -127,11 +128,11 @@ export async function undoLastGenerationCommand(
         } else {
             console.error("[undoCommand] Erro ao reverter para checkpoint:", undoError);
             if (webview) {
-                webview.postMessage({ command: 'undoFinished', success: false });
-                webview.postMessage({ command: 'undoProgressError', message: `Falha ao reverter: ${undoError instanceof Error ? undoError.message : String(undoError)}` });
+                webview.postMessage({ command: WebviewCommands.UNDO_FINISHED, success: false });
+                webview.postMessage({ command: WebviewCommands.UNDO_PROGRESS_ERROR, message: `Falha ao reverter: ${undoError instanceof Error ? undoError.message : String(undoError)}` });
                 console.log("[undoCommand] Enviadas mensagens de falha de desfazer para webview.");
                 const finalPreGenHash = context.workspaceState.get<string>(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY);
-                webview.postMessage({ command: 'updateUndoState', canUndo: !!finalPreGenHash });
+                webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: !!finalPreGenHash });
             } else {
                  vscode.window.showErrorMessage(`Falha ao reverter para checkpoint: ${undoError instanceof Error ? undoError.message : String(undoError)}`);
             }
