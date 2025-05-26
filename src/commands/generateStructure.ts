@@ -5,6 +5,19 @@ import { StructureViewProvider } from '../StructureViewProvider';
 import { Operation, parseCustomFormat } from '../services/parserService';
 import { generateAndExecuteScriptAsTask } from '../services/taskService';
 import CheckpointTracker from '../services/checkpoint/CheckpointTracker';
+/**
+ * Processa o texto colado pelo usuário e executa as operações de geração de estrutura
+ * 
+ * Este comando é o ponto de entrada principal para a funcionalidade de geração de estrutura.
+ * Ele analisa o texto formatado gerado pela IA, cria um checkpoint Git para permitir desfazer,
+ * executa os comandos e operações de criação/modificação de arquivos, e gerencia o estado
+ * dos checkpoints para a funcionalidade de desfazer.
+ * 
+ * @param context Contexto da extensão para acessar armazenamento e estado
+ * @param _provider Provedor da visualização de estrutura
+ * @param rawInputText Texto bruto colado pelo usuário contendo os comandos e códigos
+ * @param webview Instância opcional do webview para enviar mensagens de progresso
+ */
 export async function processPastedStructureCommand(
     context: vscode.ExtensionContext,
     _provider: StructureViewProvider,

@@ -1,7 +1,24 @@
 import * as vscode from 'vscode';
+/**
+ * Provedor de webview que exibe o Google em um iframe dentro do VS Code
+ */
 export class GoogleWebviewProvider implements vscode.WebviewViewProvider {
+    /**
+     * Identificador único da visualização utilizado para registro no VS Code
+     */
     public static readonly viewType = 'googleWebview';
+    /**
+     * Cria uma nova instância do provedor de webview do Google
+     * @param _extensionUri URI da extensão para carregar recursos locais
+     */
     constructor(private readonly _extensionUri: vscode.Uri) {}
+    /**
+     * Método chamado pelo VS Code quando a visualização é inicializada
+     * Configura o HTML e as opções do webview
+     * @param webviewView A visualização do webview a ser configurada
+     * @param context Contexto de resolução do webview
+     * @param _token Token de cancelamento para operações assíncronas
+     */
     public resolveWebviewView(
         webviewView: vscode.WebviewView,
         context: vscode.WebviewViewResolveContext,
@@ -13,6 +30,11 @@ export class GoogleWebviewProvider implements vscode.WebviewViewProvider {
         };
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
     }
+    /**
+     * Gera o conteúdo HTML para o webview
+     * @param webview Instância do webview para o qual o HTML será gerado
+     * @returns String contendo o HTML para exibir o iframe do Google
+     */
     private _getHtmlForWebview(webview: vscode.Webview): string {
         return `<!DOCTYPE html>
         <html lang="en">

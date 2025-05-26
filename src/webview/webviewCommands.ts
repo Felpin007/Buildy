@@ -1,5 +1,9 @@
 /**
  * Constantes para os comandos trocados entre a extensão e o webview
+ * 
+ * Estas constantes definem os tipos de mensagens que podem ser enviadas entre
+ * a extensão principal e os webviews, permitindo a comunicação bidirecional.
+ * São utilizadas para padronizar os nomes dos comandos e evitar erros de digitação.
  */
 export const WebviewCommands = {
     // Comandos enviados do webview para a extensão

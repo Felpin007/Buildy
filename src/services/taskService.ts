@@ -4,16 +4,34 @@ import * as path from 'path';
 import * as os from 'os';
 import { Operation } from './parserService';
 import { escapePath } from '../utils/pathUtils';
+
+/**
+ * Prefix used for progress messages.
+ */
 const PROGRESS_PREFIX = "PROGRESS::";
+
+/**
+ * Type constants for different types of operations.
+ */
 const TYPE_COMMAND = "COMMAND";
 const TYPE_FILE = "FILE";
 const TYPE_DIR = "DIR";
 const TYPE_INFO = "INFO"; 
 const TYPE_SUCCESS = "SUCCESS";
 const TYPE_ERROR = "ERROR";
+/**
+ * Converte um array de linhas em uma string formatada para uso em here-strings do PowerShell
+ * @param lines Array de linhas de texto
+ * @returns String formatada com quebras de linha Windows (CRLF)
+ */
 function contentForHereString(lines: string[]): string {
     return lines.map(line => line.trimEnd()).join('\r\n');
 }
+/**
+ * Executa uma tarefa do VS Code e aguarda sua conclusão para obter o código de saída
+ * @param task Tarefa do VS Code a ser executada
+ * @returns Promise que resolve para um objeto contendo o código de saída da tarefa
+ */
 function executeTaskAndGetExitCode(task: vscode.Task): Promise<{ exitCode: number | undefined }> {
     return new Promise((resolve) => {
         let endDisposable: vscode.Disposable | undefined; 
@@ -40,6 +58,16 @@ function executeTaskAndGetExitCode(task: vscode.Task): Promise<{ exitCode: numbe
         startExecution(); 
     });
 }
+/**
+ * Gera e executa um script PowerShell como uma tarefa do VS Code para realizar as operações solicitadas
+ * 
+ * Cria um script temporário que executa comandos e cria/modifica arquivos conforme especificado nas operações.
+ * Registra o progresso em um arquivo de log e retorna as mensagens de progresso.
+ * 
+ * @param operations Array de operações a serem executadas (comandos ou código)
+ * @param workspaceRoot Caminho raiz do workspace onde as operações serão executadas
+ * @returns Promise que resolve para um objeto com status de sucesso e mensagens de progresso
+ */
 export async function generateAndExecuteScriptAsTask(operations: Operation[], workspaceRoot: string): Promise<{ success: boolean, progress: string[] }> {
     const taskName = "AI Structure Generation (Hidden)"; 
     let tempScriptPath: string | null = null;

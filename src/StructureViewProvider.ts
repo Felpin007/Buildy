@@ -6,11 +6,24 @@ import { getNonce } from './utils/nonce';
 import { getWorkspaceTree } from './services/fileSystemService';
 import * as constants from './constants';
 import { WebviewCommands } from './webview/webviewCommands';
+/**
+ * Provedor da visualização principal da extensão Buildy.
+ * Responsável por gerenciar a interface que permite ao usuário colar respostas da IA,
+ * gerar estruturas de código, executar comandos e gerenciar o sistema de desfazer.
+ */
 export class StructureViewProvider implements vscode.WebviewViewProvider {
+    /**
+     * Identificador único da visualização utilizado para registro no VS Code
+     */
     public static readonly viewType = 'structureView';
     private _view?: vscode.WebviewView;
     private _currentWorkspaceRoot?: vscode.Uri;
     private _activeEditorListener?: vscode.Disposable;
+    /**
+     * Cria uma nova instância do provedor de visualização da estrutura
+     * @param _extensionUri URI da extensão para carregar recursos locais
+     * @param _context Contexto da extensão para armazenar estado e registrar listeners
+     */
     constructor(
         private readonly _extensionUri: vscode.Uri,
         private readonly _context: vscode.ExtensionContext
@@ -33,9 +46,20 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
         });
         this._context.subscriptions.push(workspaceChangeListener);
        }
-       public getWebviewView(): vscode.WebviewView | undefined {
+    /**
+     * Retorna a visualização atual do webview, se disponível
+     * @returns A instância atual do webview ou undefined se não estiver inicializado
+     */
+    public getWebviewView(): vscode.WebviewView | undefined {
         return this._view;
     }
+    /**
+     * Método chamado pelo VS Code quando a visualização é inicializada ou restaurada
+     * Configura o HTML, scripts e manipuladores de eventos do webview
+     * @param webviewView A visualização do webview a ser configurada
+     * @param context Contexto de resolução do webview
+     * @param _token Token de cancelamento para operações assíncronas
+     */
     public resolveWebviewView(
         webviewView: vscode.WebviewView,
         context: vscode.WebviewViewResolveContext,
@@ -207,6 +231,10 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
             });
         }
     }
+    /**
+     * Atualiza a árvore de arquivos do workspace e envia para o webview
+     * Usado quando o workspace muda ou quando solicitado explicitamente
+     */
     public async refreshFileTree() {
          if (!this._view) {
              console.log("[refreshFileTree] View not available for refresh.");

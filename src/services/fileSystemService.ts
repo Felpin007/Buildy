@@ -1,11 +1,28 @@
 import * as vscode from 'vscode';
+/**
+ * Interface que representa um nó na árvore de arquivos do workspace
+ */
 export interface FileTreeNode {
+    /** Nome do arquivo ou diretório */
     name: string;
+    /** URI completo do arquivo ou diretório */
     uri: vscode.Uri;
+    /** Caminho relativo à raiz do workspace */
     relativePath: string; 
+    /** Tipo do nó: arquivo ou diretório */
     type: 'file' | 'directory';
+    /** Lista de nós filhos (apenas para diretórios) */
     children?: FileTreeNode[];
 }
+/**
+ * Obtém a estrutura de arquivos e diretórios a partir de um diretório base
+ * 
+ * Percorre recursivamente a estrutura de diretórios, ignorando pastas como .git, node_modules, etc.
+ * 
+ * @param dirUri URI do diretório a ser processado
+ * @param relativePathBase Caminho relativo base para construção dos caminhos relativos
+ * @returns Promise com array de nós da árvore de arquivos
+ */
 export async function getWorkspaceTree(dirUri: vscode.Uri, relativePathBase: string): Promise<FileTreeNode[]> {
     console.log(`[fileSystemService.getWorkspaceTree] ENTER: Processing directory: ${dirUri.fsPath}, relativeBase: '${relativePathBase}'`);
     let entries: [string, vscode.FileType][];
@@ -63,4 +80,4 @@ export async function getWorkspaceTree(dirUri: vscode.Uri, relativePathBase: str
     }
     console.log(`[fileSystemService.getWorkspaceTree] EXIT: Finished processing directory: ${dirUri.fsPath}`);
     return nodes;
-}
+}

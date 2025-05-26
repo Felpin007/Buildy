@@ -2,6 +2,19 @@ import * as vscode from 'vscode';
 import * as constants from '../constants';
 import { StructureViewProvider } from '../StructureViewProvider';
 import CheckpointTracker, { DiffEntry } from '../services/checkpoint/CheckpointTracker'; 
+/**
+ * Desfaz a última geração de estrutura revertendo para um checkpoint anterior
+ * 
+ * Este comando restaura os arquivos do workspace para o estado salvo em um checkpoint Git,
+ * permitindo que o usuário desfaça as mudanças feitas pela última geração de estrutura.
+ * Ele usa o sistema de "shadow Git" para realizar a operação de desfazer sem interferir
+ * com o controle de versão normal do usuário.
+ * 
+ * @param context Contexto da extensão para acessar armazenamento e estado
+ * @param provider Provedor da visualização de estrutura
+ * @param checkpointHash Hash opcional do checkpoint para o qual reverter. Se não fornecido, usa o último checkpoint pré-geração
+ * @param webview Instância opcional do webview para enviar mensagens de progresso
+ */
 export async function undoLastGenerationCommand(
     context: vscode.ExtensionContext,
     provider: StructureViewProvider, 

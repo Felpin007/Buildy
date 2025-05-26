@@ -3,6 +3,11 @@ import { CopySystemProvider } from './CopySystemProvider';
 import { StructureViewProvider } from './StructureViewProvider';
 import * as constants from './constants';
 import * as commands from './commands';
+/**
+ * Função de ativação da extensão Buildy
+ * Registra os provedores de visualização, comandos e inicializa os serviços necessários
+ * @param context Contexto da extensão fornecido pelo VS Code
+ */
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extensão "Buildy" (com Shadow Checkpoints) está ativa!');
     context.globalStorageUri.fsPath;
@@ -111,6 +116,10 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 }
+/**
+ * Função de desativação da extensão
+ * Chamada quando a extensão é desativada
+ */
 export function deactivate() {
     console.log('Extensão "Buildy" desativada.');
 }

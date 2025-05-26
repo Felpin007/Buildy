@@ -5,10 +5,28 @@ import * as fs from 'fs/promises';
 import CheckpointTracker from '../services/checkpoint/CheckpointTracker';
 import * as constants from '../constants';
 import { fileExistsAtPath } from '../utils/fs';
+
+/**
+ * Interface para os argumentos do comando de visualização de diferenças
+ */
 interface ShowDiffArgs {
+    /** Caminho relativo do arquivo para mostrar a diferença */
     relativePath: string;
+    /** Tipo de diferença: 'generation' para comparação entre checkpoint e estado atual,
+     * ou 'undo' para comparação entre estados antes e depois de desfazer */
     type?: 'generation' | 'undo'; 
 }
+
+/**
+ * Mostra a diferença entre versões de um arquivo
+ * 
+ * Este comando permite ao usuário visualizar as diferenças entre versões de um arquivo:
+ * - Para o tipo 'generation': Compara o estado do arquivo antes da geração com o estado atual
+ * - Para o tipo 'undo': Compara o estado do arquivo antes e depois da operação de desfazer
+ * 
+ * @param context Contexto da extensão para acessar armazenamento e estado
+ * @param args Argumentos do comando, pode ser um objeto ShowDiffArgs, uma string com o caminho do arquivo, ou undefined
+ */
 export async function showDiffCommand(context: vscode.ExtensionContext, args: ShowDiffArgs | string | undefined): Promise<void> {
     let relativePath: string | undefined;
     let diffType: 'generation' | 'undo' = 'generation'; 
@@ -98,4 +116,4 @@ export async function showDiffCommand(context: vscode.ExtensionContext, args: Sh
            vscode.window.showErrorMessage(`Falha ao mostrar a diferença para ${relativePath}: ${error instanceof Error ? error.message : String(error)}`); 
        } finally {
        }
-}
+}

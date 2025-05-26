@@ -1,11 +1,24 @@
 import * as vscode from 'vscode';
 import { getHtmlForWebview } from './webview/htmlContent';
 import { getWorkspaceTree } from './services/fileSystemService';
+/**
+ * Provedor do sistema de cópia de arquivos da extensão Buildy.
+ * Gerencia a interface que permite ao usuário navegar na estrutura de arquivos,
+ * selecionar arquivos e copiar seus conteúdos para a área de transferência.
+ */
 export class CopySystemProvider implements vscode.WebviewViewProvider {
+    /**
+     * Identificador único da visualização utilizado para registro no VS Code
+     */
     public static readonly viewType = 'copySystemView';
     private _view?: vscode.WebviewView;
     private _currentWorkspaceRoot?: vscode.Uri;
     private readonly _context: vscode.ExtensionContext;
+    /**
+     * Cria uma nova instância do provedor do sistema de cópia
+     * @param _extensionUri URI da extensão para carregar recursos locais
+     * @param context Contexto da extensão para armazenar estado e registrar listeners
+     */
     constructor(
         private readonly _extensionUri: vscode.Uri,
         context: vscode.ExtensionContext
@@ -30,6 +43,13 @@ export class CopySystemProvider implements vscode.WebviewViewProvider {
         });
         this._context.subscriptions.push(workspaceChangeListener);
     }
+    /**
+     * Método chamado pelo VS Code quando a visualização é inicializada ou restaurada
+     * Configura o HTML, scripts e manipuladores de eventos do webview
+     * @param webviewView A visualização do webview a ser configurada
+     * @param context Contexto de resolução do webview
+     * @param _token Token de cancelamento para operações assíncronas
+     */
     public resolveWebviewView(
         webviewView: vscode.WebviewView,
         context: vscode.WebviewViewResolveContext,
@@ -173,6 +193,10 @@ Start-Sleep -Milliseconds 200
         });
         this._context.subscriptions.push(visibilityChangeListener);
     }
+    /**
+     * Atualiza a árvore de arquivos do workspace e envia para o webview
+     * Usado quando o workspace muda ou quando a visualização fica visível
+     */
     public async refreshFileTree() {
          if (!this._view) {
              console.log("[CopySystemProvider.refreshFileTree] Visualização não disponível para atualização.");

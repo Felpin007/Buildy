@@ -1,5 +1,16 @@
 import * as vscode from 'vscode';
 import { getNonce } from '../utils/nonce'; 
+
+/**
+ * Gera o conteúdo HTML para os webviews da extensão.
+ * 
+ * @param webview Instância do webview para o qual o HTML será gerado.
+ * @param extensionUri URI da extensão para carregar recursos locais.
+ * @param viewType Tipo de visualização a ser gerada ('structure' para o gerador de estrutura ou 'copySystem' para o explorador de arquivos).
+ * @returns String contendo o HTML completo para o webview solicitado.
+ * @param viewType Tipo de visualização a ser gerada ('structure' para o gerador de estrutura ou 'copySystem' para o explorador de arquivos)
+ * @returns String contendo o HTML completo para o webview solicitado
+ */
 export function getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri, viewType: 'structure' | 'copySystem'): string {
     const nonce = getNonce();
     const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'webview', 'main.js')); 

@@ -1,6 +1,10 @@
 import { getSelectedFilePaths, updateCopyButtonState, handleCheckboxChange } from './checkboxUtils.js';
 import { showContextMenu, hideContextMenu } from './contextMenu.js';
 import { renderTree } from './treeView.js';
+/**
+ * Módulo principal do webview da extensão Buildy
+ * Gerencia a interface do usuário e a comunicação com a extensão VS Code
+ */
 (function() {
     let vscode;
     try {
@@ -46,6 +50,11 @@ import { renderTree } from './treeView.js';
     let isGenerating = false;
     let additionalPrompt = ''; 
     let settingsSectionVisible = false; 
+    /**
+     * Analisa uma mensagem de progresso para extrair o tipo e o texto
+     * @param {string} message - Mensagem de progresso no formato "PROGRESS::TIPO::TEXTO"
+     * @returns {Object} Objeto contendo o tipo e o texto da mensagem
+     */
     function parseProgressMessage(message) {
         const prefix = "PROGRESS::";
         if (!message || !message.startsWith(prefix)) {
@@ -57,6 +66,13 @@ import { renderTree } from './treeView.js';
         }
         return { type: parts[0], text: parts.slice(1).join('::') };
     }
+    /**
+     * Renderiza um item de progresso na lista de progresso
+     * @param {string} type - Tipo de mensagem (INFO, SUCCESS, ERROR, etc.)
+     * @param {string} text - Texto da mensagem
+     * @param {string} diffType - Tipo de diff para o botão de visualização de mudanças
+     * @returns {HTMLElement} O elemento criado e adicionado à lista
+     */
     function renderProgressItem(type, text, diffType = 'generation') { 
         if (!progressList) return;
         let relativePath = null;
@@ -114,6 +130,10 @@ import { renderTree } from './treeView.js';
         progressList.scrollTop = progressList.scrollHeight;
         return item;
     }
+    /**
+     * Manipula o clique no botão de visualização de diff
+     * @param {Event} event - Evento de clique
+     */
     function handleDiffClick(event) {
         const button = event.currentTarget;
         const path = button.dataset.path;
@@ -123,6 +143,12 @@ import { renderTree } from './treeView.js';
             vscode.postMessage({ command: 'showDiff', path: path, type: type });
         }
     }
+    /**
+     * Mostra um texto temporário em um botão e depois restaura o texto original
+     * @param {HTMLButtonElement} button - Botão a ser modificado
+     * @param {string} text - Texto temporário a ser exibido
+     * @param {number} duration - Duração em milissegundos para exibir o texto
+     */
     function showTemporaryButtonText(button, text, duration = 1500) {
         if (!button) return;
         const originalText = button.innerHTML;
@@ -131,6 +157,11 @@ import { renderTree } from './treeView.js';
             button.innerHTML = originalText;
         }, duration);
     }
+    /**
+     * Adiciona o prompt adicional ao prompt base
+     * @param {string} basePrompt - Prompt base a ser estendido
+     * @returns {string} Prompt completo com as instruções adicionais
+     */
     function appendAdditionalPrompt(basePrompt) {
         if (!additionalPrompt || additionalPrompt.trim() === '') {
             return basePrompt;
@@ -139,6 +170,9 @@ import { renderTree } from './treeView.js';
     }
     
     // Solicitar o conteúdo dos prompts ao carregar a página
+    /**
+     * Solicita o conteúdo dos prompts para Windows e Linux à extensão
+     */
     function requestPromptContent() {
         vscode.postMessage({ command: 'getPromptContent', platform: 'windows' });
         vscode.postMessage({ command: 'getPromptContent', platform: 'linux' });

@@ -1,5 +1,15 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+
+/**
+ * Copia o conteúdo de múltiplos arquivos para a área de transferência
+ * 
+ * Este comando lê o conteúdo de todos os arquivos especificados e os combina em um único texto,
+ * separando cada arquivo com uma linha divisora. O texto combinado é então copiado para a área
+ * de transferência do sistema.
+ * 
+ * @param relativePaths Array de caminhos relativos dos arquivos a serem copiados
+ */
 export async function copyFilesCommand(relativePaths: string[] | undefined): Promise<void> {
     if (!relativePaths || relativePaths.length === 0) {
         vscode.window.showWarningMessage('Nenhum arquivo selecionado para cópia.');
@@ -57,4 +67,4 @@ export async function copyFilesCommand(relativePaths: string[] | undefined): Pro
     if (failedReads.length > 0) {
         vscode.window.showWarningMessage(`Falha ao ler ${failedReads.length} arquivo(s): ${failedReads.join(', ')}`);
     }
-}
+}
