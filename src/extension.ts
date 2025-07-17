@@ -15,7 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
     const structureProvider = new StructureViewProvider(context.extensionUri, context);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(StructureViewProvider.viewType, structureProvider, {
-            webviewOptions: { retainContextWhenHidden: true }
+            webviewOptions: { retainContextWhenHidden: false }
         })
     );
     const copySystemProvider = new CopySystemProvider(context.extensionUri, context);
@@ -48,12 +48,12 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('buildy.copySelectedFilesContent',
             async (relativePaths: string[] | undefined) => {
                 if (!relativePaths || relativePaths.length === 0) {
-                    vscode.window.showInformationMessage('Nenhum arquivo selecionado para cópia.');
+                    vscode.window.showInformationMessage('No files selected for copying.');
                     return;
                 }
                 const workspaceFolders = vscode.workspace.workspaceFolders;
                 if (!workspaceFolders || workspaceFolders.length === 0) {
-                    vscode.window.showErrorMessage('Nenhuma pasta de workspace aberta.');
+                    vscode.window.showErrorMessage('No workspace folder open.');
                     return;
                 }
                 const workspaceRootUri = workspaceFolders[0].uri;
@@ -102,7 +102,7 @@ export function activate(context: vscode.ExtensionContext) {
                         vscode.window.showInformationMessage(message);
                     }
                 } else {
-                    vscode.window.showErrorMessage(`Falha ao processar os arquivos selecionados.`);
+                    vscode.window.showErrorMessage(`Failed to process selected files.`);
                 }
             }
         )

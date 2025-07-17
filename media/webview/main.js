@@ -38,6 +38,60 @@ import { WebviewCommands } from './webviewCommands.js';
     const undoButton = document.getElementById('undoButton'); 
     const refreshTreeButton = document.getElementById('refreshTreeButton');
     const copySelectedButton = document.getElementById('copySelectedButton');
+    const copyDiffButton = document.getElementById('copyDiffButton');
+    const openTextareaButton = document.getElementById('openTextareaButton');
+    const textEditorSection = document.getElementById('textEditorSection');
+    const solutionTextarea = document.getElementById('solutionTextarea');
+    const createSolutionButton = document.getElementById('createSolutionButton');
+    const deleteSolutionButton = document.getElementById('deleteSolutionButton');
+    const closeTextareaButton = document.getElementById('closeTextareaButton');
+    const notificationContainer = document.getElementById('notificationContainer');
+
+    // Sistema de notificações internas
+    function showInternalNotification(message, type = 'info') {
+        if (!notificationContainer) return;
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        
+        // Ícone baseado no tipo
+        let iconClass = 'codicon-info';
+        if (type === 'warning') iconClass = 'codicon-warning';
+        else if (type === 'error') iconClass = 'codicon-error';
+        
+        notification.innerHTML = `
+            <i class="codicon ${iconClass} notification-icon"></i>
+            <span class="notification-message">${message}</span>
+            <button class="notification-close" title="Close">
+                <i class="codicon codicon-close"></i>
+            </button>
+        `;
+        
+        // Adicionar evento de fechar
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.addEventListener('click', () => {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        });
+        
+        // Auto-remover após 5 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 5000);
+        
+        notificationContainer.appendChild(notification);
+    }
     const fileTreeContainer = document.getElementById('fileTreeContainer');
     const fileTree = document.getElementById('fileTree'); 
     const loadingIndicator = document.getElementById('loadingIndicator');
@@ -333,6 +387,47 @@ import { WebviewCommands } from './webviewCommands.js';
             vscode.postMessage({ command: WebviewCommands.SHOW_INFO, text: 'No files selected for copying.' });
         }
     });
+    copyDiffButton?.addEventListener('click', () => {
+        console.log('[Webview] Copy diff button clicked.');
+        vscode.postMessage({ command: WebviewCommands.COPY_DIFF_TO_CLIPBOARD });
+    });
+    
+    openTextareaButton?.addEventListener('click', () => {
+        console.log('[Webview] Open textarea button clicked.');
+        if (textEditorSection) {
+            textEditorSection.style.display = textEditorSection.style.display === 'none' ? 'block' : 'none';
+        }
+    });
+    
+    createSolutionButton?.addEventListener('click', () => {
+        const content = solutionTextarea?.value;
+        if (!content || content.trim().length === 0) {
+            vscode.postMessage({ command: WebviewCommands.SHOW_ERROR, text: 'Please enter some text before creating the file.' });
+            return;
+        }
+        console.log('[Webview] Create solution button clicked.');
+        vscode.postMessage({ command: WebviewCommands.CREATE_SOLUTION_FILE, content: content });
+        // Fechar o Text Editor automaticamente após criar o arquivo
+        if (textEditorSection) {
+            textEditorSection.style.display = 'none';
+        }
+    });
+    
+    deleteSolutionButton?.addEventListener('click', () => {
+        console.log('[Webview] Delete solution button clicked.');
+        vscode.postMessage({ command: WebviewCommands.DELETE_SOLUTION_FILE });
+        // Fechar o Text Editor automaticamente após deletar o arquivo
+        if (textEditorSection) {
+            textEditorSection.style.display = 'none';
+        }
+    });
+    
+    closeTextareaButton?.addEventListener('click', () => {
+        console.log('[Webview] Close textarea button clicked.');
+        if (textEditorSection) {
+            textEditorSection.style.display = 'none';
+        }
+    });
     document.addEventListener('click', (event) => {
         const isClickInsideContextMenu = contextMenu?.contains(event.target);
         const isClickInsideSettings = promptSettingsSection?.contains(event.target);
@@ -497,6 +592,10 @@ import { WebviewCommands } from './webviewCommands.js';
             case 'showInfo':
                 vscode.postMessage({ command: 'showInfo', text: message.text });
                 break;
+            case 'showInternalNotification':
+                console.log(`[Webview] Received internal notification: [${message.type}] ${message.message}`);
+                showInternalNotification(message.message, message.type);
+                break;
         }
     });
     console.log("Script do Webview carregado.");
@@ -551,4 +650,4 @@ import { WebviewCommands } from './webviewCommands.js';
             }
         };
     }
-})(); 
+})();

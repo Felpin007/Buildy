@@ -25,6 +25,9 @@ dist/ # Add if you use a 'dist' folder
 Thumbs.db
 ehthumbs.db
 
+# Cascade specific
+.windsurf/
+
 # Log files
 *.log
 logs/

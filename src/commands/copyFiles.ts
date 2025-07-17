@@ -12,12 +12,12 @@ import * as path from 'path';
  */
 export async function copyFilesCommand(relativePaths: string[] | undefined): Promise<void> {
     if (!relativePaths || relativePaths.length === 0) {
-        vscode.window.showWarningMessage('Nenhum arquivo selecionado para cópia.');
+        vscode.window.showWarningMessage('No files selected for copying.');
         return;
     }
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
-        vscode.window.showErrorMessage('Nenhuma pasta de workspace aberta.');
+        vscode.window.showErrorMessage('No workspace folder open.');
         return;
     }
     const workspaceRootUri = workspaceFolders[0].uri;
@@ -57,14 +57,14 @@ export async function copyFilesCommand(relativePaths: string[] | undefined): Pro
     if (filesRead > 0) {
         try {
             await vscode.env.clipboard.writeText(combinedContent);
-            vscode.window.showInformationMessage(`Conteúdo de ${filesRead} arquivo(s) copiado para a área de transferência.`);
+            vscode.window.showInformationMessage(`Content from ${filesRead} file(s) copied to clipboard.`);
         } catch (clipboardError) {
-            vscode.window.showErrorMessage('Falha ao copiar para a área de transferência.');
+            vscode.window.showErrorMessage('Failed to copy to clipboard.');
         }
     } else {
-        vscode.window.showWarningMessage('Nenhum conteúdo de arquivo pôde ser lido ou copiado.');
+        vscode.window.showWarningMessage('No file content could be read or copied.');
     }
     if (failedReads.length > 0) {
-        vscode.window.showWarningMessage(`Falha ao ler ${failedReads.length} arquivo(s): ${failedReads.join(', ')}`);
+        vscode.window.showWarningMessage(`Failed to read ${failedReads.length} file(s): ${failedReads.join(', ')}`);
     }
 }

@@ -18,7 +18,6 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'structureView';
     private _view?: vscode.WebviewView;
     private _currentWorkspaceRoot?: vscode.Uri;
-    private _activeEditorListener?: vscode.Disposable;
     /**
      * Cria uma nova instância do provedor de visualização da estrutura
      * @param _extensionUri URI da extensão para carregar recursos locais
@@ -33,15 +32,12 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
             const newRoot = vscode.workspace.workspaceFolders?.[0]?.uri;
             const rootChanged = this._currentWorkspaceRoot?.fsPath !== newRoot?.fsPath;
             this._currentWorkspaceRoot = newRoot;
-            console.log(`[StructureViewProvider] Workspace folders changed. New root: ${this._currentWorkspaceRoot?.fsPath ?? 'None'}`);
-            if (this._view?.visible) {
+                        if (this._view?.visible) {
                 this._view?.webview.postMessage({ command: WebviewCommands.WORKSPACE_CHANGED });
                 if (rootChanged && this._currentWorkspaceRoot) {
-                    console.log("[StructureViewProvider] Root changed, refreshing tree.");
-                    this.refreshFileTree();
+                                        this.refreshFileTree();
                 } else if (!this._currentWorkspaceRoot) {
-                    console.log("[StructureViewProvider] Workspace closed, view notified.");
-                }
+                                    }
             }
         });
         this._context.subscriptions.push(workspaceChangeListener);
@@ -76,37 +72,31 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.html = getHtmlForWebview(webviewView.webview, this._extensionUri, 'structure');
         webviewView.webview.onDidReceiveMessage(
             async message => {
-                console.log(`[StructureViewProvider] Received message: ${message.command}`);
-                switch (message.command) {
+                                switch (message.command) {
                     case WebviewCommands.GET_PROMPT_CONTENT:
                         this.sendPromptContent(message.platform);
                         return;
                     case WebviewCommands.GENERATE_STRUCTURE:
-                        console.log(`[StructureViewProvider] Received 'generateStructure' message from webview. Executing command...`);
-                        vscode.commands.executeCommand('buildy.processPastedStructure', message.text, this._view?.webview);
+                                                vscode.commands.executeCommand('buildy.processPastedStructure', message.text, this._view?.webview);
                         return;
                     case WebviewCommands.SHOW_DIFF:
-                                          console.log(`[StructureViewProvider] Received 'showDiff' message for path: ${message.path}, type: ${message.type}`);
-                                          vscode.commands.executeCommand('buildy.showDiff', {
+                                                                                    vscode.commands.executeCommand('buildy.showDiff', {
                                               relativePath: message.path,
                                               type: message.type
                                           });
                                           return;
                     case WebviewCommands.UNDO_LAST_GENERATION:
-                        console.log(`[StructureViewProvider] Received 'undoLastGeneration' message. skipConfirmation: ${message.skipConfirmation}`);
-                                          vscode.commands.executeCommand('buildy.undoLastGeneration', undefined, this._view?.webview, message.skipConfirmation);
+                                                                  vscode.commands.executeCommand('buildy.undoLastGeneration', undefined, this._view?.webview, message.skipConfirmation);
                         return;
                     case WebviewCommands.SAVE_ADDITIONAL_PROMPT:
                         if (typeof message.text === 'string') {
-                             console.log(`[StructureViewProvider] Received 'saveAdditionalPrompt'. Saving text: "${message.text}"`);
-                             await this._context.globalState.update(constants.ADDITIONAL_PROMPT_KEY, message.text);
+                                                          await this._context.globalState.update(constants.ADDITIONAL_PROMPT_KEY, message.text);
                         } else {
                              console.warn("[StructureViewProvider] Received 'saveAdditionalPrompt' without valid text.");
                         }
                         return;
                     case WebviewCommands.REQUEST_INITIAL_ADDITIONAL_PROMPT:
-                        console.log("[StructureViewProvider] Received 'requestInitialAdditionalPrompt'. Sending saved value.");
-                        this.sendAdditionalPromptToWebview();
+                                                this.sendAdditionalPromptToWebview();
                         return;
                     case WebviewCommands.GET_STRUCTURE:
                         if (this._currentWorkspaceRoot) {
@@ -119,15 +109,13 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
                         }
                         return;
                     case WebviewCommands.COPY_SELECTED_FILES_CONTENT:
-                         console.log("[StructureViewProvider] Received 'copySelectedFilesContent', executing command...");
-                         vscode.commands.executeCommand('buildy.copySelectedFilesContent', message.paths);
+                                                  vscode.commands.executeCommand('buildy.copySelectedFilesContent', message.paths);
                         return;
                     case WebviewCommands.OPEN_FILE:
                         if (message.path && this._currentWorkspaceRoot) {
                             try {
                                 const fileUri = vscode.Uri.joinPath(this._currentWorkspaceRoot, message.path.replace(/\\/g, '/'));
-                                console.log(`[StructureViewProvider] Opening file: ${fileUri.fsPath}`);
-                                vscode.workspace.openTextDocument(fileUri).then(doc => {
+                                                                vscode.workspace.openTextDocument(fileUri).then(doc => {
                                     vscode.window.showTextDocument(doc, { preview: false });
                                 }, err => {
                                      console.error(`[StructureViewProvider] Failed to open document ${fileUri.fsPath}:`, err);
@@ -152,8 +140,7 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
                         this.sendAdditionalPromptToWebview();
                         return;
                     case WebviewCommands.REQUEST_INITIAL_UNDO_STATE:
-                        console.log("[StructureViewProvider] Received 'requestInitialUndoState' message.");
-                        this.sendUndoState();
+                                                this.sendUndoState();
                         return;
                 }
             },
@@ -162,32 +149,27 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
         );
         const visibilityChangeListener = webviewView.onDidChangeVisibility(() => {
              if (webviewView.visible) {
-                 console.log("[StructureViewProvider] View became visible.");
-                 if (this._currentWorkspaceRoot) {
-                     console.log("[StructureViewProvider] Refreshing tree on visibility.");
-                     this.refreshFileTree();
+                                  if (this._currentWorkspaceRoot) {
+                                          this.refreshFileTree();
                  } else {
                       this._view?.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'No workspace open' });
                  }
                  this.sendUndoState();
                  this.sendAdditionalPromptToWebview();
              } else {
-                 console.log("[StructureViewProvider] View became hidden.");
-             }
+                              }
         });
         this._context.subscriptions.push(visibilityChangeListener);
     }
     private sendUndoState() {
         if (!this._view) return;
         const currentCheckpointHash = this._context.workspaceState.get<string>(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY);
-        console.log(`[StructureViewProvider.sendUndoState] Sending updateUndoState. Checkpoint available: ${!!currentCheckpointHash}`);
-        this._view.webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: !!currentCheckpointHash });
+                this._view.webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: !!currentCheckpointHash });
     }
     private sendAdditionalPromptToWebview() {
         if (!this._view) return;
         const savedPrompt = this._context.globalState.get<string>(constants.ADDITIONAL_PROMPT_KEY, '');
-        console.log(`[StructureViewProvider.sendAdditionalPromptToWebview] Sending additional prompt: "${savedPrompt}"`);
-        this._view.webview.postMessage({ command: WebviewCommands.UPDATE_ADDITIONAL_PROMPT, text: savedPrompt });
+                this._view.webview.postMessage({ command: WebviewCommands.UPDATE_ADDITIONAL_PROMPT, text: savedPrompt });
     }
     
     /**
@@ -206,8 +188,7 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
                 platform === 'windows' ? 'windows.txt' : 'linux.txt'
             );
             
-            console.log(`[StructureViewProvider.sendPromptContent] Carregando prompt para ${platform} de: ${promptFilePath}`);
-            
+                        
             if (fs.existsSync(promptFilePath)) {
                 const content = fs.readFileSync(promptFilePath, 'utf8');
                 this._view.webview.postMessage({ 
@@ -215,19 +196,18 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
                     platform: platform, 
                     content: content 
                 });
-                console.log(`[StructureViewProvider.sendPromptContent] Prompt para ${platform} enviado com sucesso.`);
-            } else {
+                            } else {
                 console.error(`[StructureViewProvider.sendPromptContent] Arquivo de prompt não encontrado: ${promptFilePath}`);
                 this._view.webview.postMessage({ 
                     command: WebviewCommands.SHOW_ERROR, 
-                    text: `Erro ao carregar prompt para ${platform}: arquivo não encontrado.` 
+                    text: `Error loading prompt for ${platform}: file not found.` 
                 });
             }
         } catch (error) {
             console.error(`[StructureViewProvider.sendPromptContent] Erro ao carregar prompt para ${platform}:`, error);
             this._view.webview.postMessage({ 
                 command: WebviewCommands.SHOW_ERROR, 
-                text: `Erro ao carregar prompt para ${platform}: ${error instanceof Error ? error.message : String(error)}` 
+                text: `Error loading prompt for ${platform}: ${error instanceof Error ? error.message : String(error)}` 
             });
         }
     }
@@ -237,22 +217,16 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
      */
     public async refreshFileTree() {
          if (!this._view) {
-             console.log("[refreshFileTree] View not available for refresh.");
-             return;
+                          return;
          }
          if (!this._currentWorkspaceRoot) {
-             console.log("[refreshFileTree] No workspace open, sending clear signal.");
-             this._view.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'No workspace open' });
+                          this._view.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'No workspace open' });
              return;
          };
-         console.log(`[StructureViewProvider.refreshFileTree] START Refreshing for: ${this._currentWorkspaceRoot.fsPath}`);
-         this._view.webview.postMessage({ command: WebviewCommands.SET_LOADING, isLoading: true });
-         console.log(`[StructureViewProvider.refreshFileTree] Posted setLoading: true`);
-         try {
-             console.log(`[StructureViewProvider.refreshFileTree] Calling getWorkspaceTree for root...`);
-             const treeData = await getWorkspaceTree(this._currentWorkspaceRoot, '');
-             console.log(`[StructureViewProvider.refreshFileTree] getWorkspaceTree returned. Tree data fetched, sending to webview.`);
-             this._view.webview.postMessage({
+                  this._view.webview.postMessage({ command: WebviewCommands.SET_LOADING, isLoading: true });
+                  try {
+                          const treeData = await getWorkspaceTree(this._currentWorkspaceRoot, '');
+                          this._view.webview.postMessage({
                  command: WebviewCommands.STRUCTURE_DATA,
                  data: treeData,
                  workspaceFolderName: vscode.workspace.workspaceFolders?.[0]?.name,
@@ -268,48 +242,11 @@ export class StructureViewProvider implements vscode.WebviewViewProvider {
                  this._view.webview.postMessage({ command: WebviewCommands.STRUCTURE_DATA, data: null, error: 'Failed to read workspace' });
              }
          } finally {
-             console.log(`[StructureViewProvider.refreshFileTree] FINALLY block: Posting setLoading: false`);
-             this._view.webview.postMessage({ command: WebviewCommands.SET_LOADING, isLoading: false });
-             console.log(`[StructureViewProvider.refreshFileTree] FINALLY block: Posted setLoading: false`);
-         }
+                          this._view.webview.postMessage({ command: WebviewCommands.SET_LOADING, isLoading: false });
+                      }
     }
     private _getHtmlForWebview(webview: vscode.Webview): string {
         return getHtmlForWebview(webview, this._extensionUri, 'structure');
     }
-    /*
-    private _setupActiveEditorListener() {
-        this._activeEditorListener?.dispose();
-        this._activeEditorListener = vscode.window.onDidChangeActiveTextEditor(editor => {
-            console.log(`[StructureViewProvider] Active editor changed: ${editor?.document.uri.fsPath ?? 'None'}`);
-            this._sendActiveFileToWebview(editor?.document.uri);
-        });
-        this._context.subscriptions.push(this._activeEditorListener);
-    }
-    private _sendActiveFileToWebview(fileUri: vscode.Uri | undefined) {
-        if (this._view && fileUri) {
-            const relativePath = this._getRelativePath(fileUri);
-            if (relativePath !== null) {
-                console.log(`[StructureViewProvider] Sending setActiveFile: ${relativePath}`);
-                this._view.webview.postMessage({ command: 'setActiveFile', path: relativePath });
-            } else {
-                 console.log(`[StructureViewProvider] Active file outside workspace, sending null path.`);
-                 this._view.webview.postMessage({ command: 'setActiveFile', path: null });
-            }
-        } else if (this._view) {
-            console.log(`[StructureViewProvider] No active file, sending null path.`);
-            this._view.webview.postMessage({ command: 'setActiveFile', path: null });
-        }
-    }
-    private _getRelativePath(fileUri: vscode.Uri | undefined): string | null {
-        if (!fileUri || !this._currentWorkspaceRoot) {
-            return null;
-        }
-        const workspacePath = this._currentWorkspaceRoot.path.replace(/\\/g, '/');
-        const filePath = fileUri.path.replace(/\\/g, '/');
-        if (filePath.startsWith(workspacePath + '/')) {
-            return path.relative(this._currentWorkspaceRoot.fsPath, fileUri.fsPath).replace(/\\/g, '/');
-        }
-        return null;
-    }
-    */
-}
+}
+

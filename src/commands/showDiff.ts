@@ -37,13 +37,13 @@ export async function showDiffCommand(context: vscode.ExtensionContext, args: Sh
         diffType = args.type === 'undo' ? 'undo' : 'generation'; 
     }
 	if (!relativePath) {
-		vscode.window.showErrorMessage("Nenhum caminho de arquivo fornecido para mostrar a diferença."); 
+		vscode.window.showErrorMessage("No file path provided to show difference."); 
 		return;
 	}
     console.log(`[showDiffCommand] Recebida solicitação para caminho: ${relativePath}, tipo: ${diffType}`);
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
-        vscode.window.showErrorMessage("Nenhuma pasta de workspace aberta para mostrar a diferença."); 
+        vscode.window.showErrorMessage("No workspace folder open to show difference."); 
         return;
     }
     const workspaceRootPath = workspaceFolders[0].uri.fsPath;
@@ -56,7 +56,7 @@ export async function showDiffCommand(context: vscode.ExtensionContext, args: Sh
            tracker = await CheckpointTracker.create(tempTaskId, context.globalStorageUri.fsPath);
            console.log(`[showDiffCommand] CheckpointTracker.create retornou: ${tracker ? 'Instância' : 'indefinido'}`);
            if (!tracker) {
-               vscode.window.showErrorMessage("Não foi possível inicializar o sistema de checkpoint para mostrar a diferença."); 
+               vscode.window.showErrorMessage("Could not initialize checkpoint system to show difference."); 
                return;
            }
            let leftUri: vscode.Uri;
@@ -67,7 +67,7 @@ export async function showDiffCommand(context: vscode.ExtensionContext, args: Sh
                const undoBeforeHash = context.workspaceState.get<string>(constants.LAST_UNDO_BEFORE_HASH_KEY);
                const undoAfterHash = context.workspaceState.get<string>(constants.LAST_UNDO_AFTER_HASH_KEY);
                if (!undoBeforeHash || !undoAfterHash) {
-                   vscode.window.showWarningMessage("Não foi possível encontrar os checkpoints para a última operação de desfazer."); 
+                   vscode.window.showWarningMessage("Could not find checkpoints for the last undo operation."); 
                    return;
                }
                const beforeShortHash = undoBeforeHash.substring(0, 7);
@@ -87,7 +87,7 @@ export async function showDiffCommand(context: vscode.ExtensionContext, args: Sh
                console.log(`[showDiffCommand] Manipulando tipo de diff 'generation' para ${relativePath}`);
                const baselineCheckpointHash = context.workspaceState.get<string>(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY);
                if (!baselineCheckpointHash) {
-                   vscode.window.showWarningMessage("Nenhum checkpoint pré-geração encontrado para comparar."); 
+                   vscode.window.showWarningMessage("No pre-generation checkpoint found for comparison."); 
                    return;
                }
                const baselineShortHash = baselineCheckpointHash.substring(0, 7);
@@ -113,7 +113,7 @@ export async function showDiffCommand(context: vscode.ExtensionContext, args: Sh
            await vscode.commands.executeCommand('vscode.diff', leftUri, rightUri, diffTitle);
        } catch (error) {
            console.error(`[showDiffCommand] Erro ao mostrar diff para ${relativePath} (tipo: ${diffType}):`, error);
-           vscode.window.showErrorMessage(`Falha ao mostrar a diferença para ${relativePath}: ${error instanceof Error ? error.message : String(error)}`); 
+           vscode.window.showErrorMessage(`Failed to show difference for ${relativePath}: ${error instanceof Error ? error.message : String(error)}`); 
        } finally {
        }
 }

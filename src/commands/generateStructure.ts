@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as constants from '../constants';
 import { StructureViewProvider } from '../StructureViewProvider';
-import { Operation, parseCustomFormat } from '../services/parserService';
+import { parseCustomFormat } from '../services/parserService';
 import { generateAndExecuteScriptAsTask } from '../services/taskService';
 import CheckpointTracker from '../services/checkpoint/CheckpointTracker';
 import { WebviewCommands } from '../webview/webviewCommands';
@@ -27,7 +27,7 @@ export async function processPastedStructureCommand(
 ): Promise<void> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
-              vscode.window.showErrorMessage('Nenhuma pasta de workspace aberta.');
+              vscode.window.showErrorMessage('No workspace folder open.');
         webview?.postMessage({ command: WebviewCommands.GENERATION_FINISHED, success: false });
         return;
     }
@@ -40,11 +40,8 @@ export async function processPastedStructureCommand(
     try {
         try {
             checkpointTracker = await CheckpointTracker.create(taskId, context.globalStorageUri.fsPath);
-            if (!checkpointTracker) {
-            } else {
-            }
         } catch (trackerError) {
-                     vscode.window.showWarningMessage('Falha ao inicializar sistema de checkpoint. A funcionalidade de desfazer não estará disponível para esta operação.');
+                     vscode.window.showWarningMessage('Failed to initialize checkpoint system. Undo functionality will not be available for this operation.');
              if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false }); }
         }
         if (checkpointTracker) {
@@ -58,11 +55,11 @@ export async function processPastedStructureCommand(
                 } else {
                     await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, undefined);
                     preGenerationCheckpointHash = null;
-                                   vscode.window.showWarningMessage('Falha ao criar checkpoint pré-geração. Desfazer não estará disponível.');
+                                   vscode.window.showWarningMessage('Failed to create pre-generation checkpoint. Undo will not be available.');
                     if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false }); }
                 }
             } catch (commitError) {
-                            vscode.window.showErrorMessage(`Falha ao criar checkpoint pré-geração: ${commitError instanceof Error ? commitError.message : String(commitError)}`);
+                            vscode.window.showErrorMessage(`Failed to create pre-generation checkpoint: ${commitError instanceof Error ? commitError.message : String(commitError)}`);
                 await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, undefined);
                 preGenerationCheckpointHash = null;
                 if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false }); }
@@ -89,15 +86,15 @@ export async function processPastedStructureCommand(
                         } else if (postCommitResult === preGenerationCheckpointHash) {
                         } else {
                             await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
-                                                  vscode.window.showWarningMessage('Não foi possível salvar o estado após geração bem-sucedida.');
+                                                  vscode.window.showWarningMessage('Could not save state after successful generation.');
                         }
                     } else {
                          await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
-                                           vscode.window.showWarningMessage('Não foi possível preparar mudanças após geração bem-sucedida. Estado pós-geração não foi salvo.');
+                                           vscode.window.showWarningMessage('Could not prepare changes after successful generation. Post-generation state was not saved.');
                     }
                 } catch (postCommitError) {
                     await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
-                                   vscode.window.showWarningMessage(`Erro ao salvar estado pós-geração: ${postCommitError instanceof Error ? postCommitError.message : String(postCommitError)}`);
+                                   vscode.window.showWarningMessage(`Error saving post-generation state: ${postCommitError instanceof Error ? postCommitError.message : String(postCommitError)}`);
                 }
             } else if (!generationSuccess) {
                  await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
@@ -121,22 +118,22 @@ export async function processPastedStructureCommand(
         } else {
             generationSuccess = true;
             if (cleanedInput.trim().length > 0) {
-                            vscode.window.showWarningMessage("Nenhuma operação válida <command> ou <code> encontrada. Nada foi gerado.");
+                            vscode.window.showWarningMessage("No valid <command> or <code> operations found. Nothing was generated.");
             } else {
-                            vscode.window.showWarningMessage("Nenhum texto de estrutura fornecido. Nada foi gerado.");
+                            vscode.window.showWarningMessage("No structure text provided. Nothing was generated.");
             }
             if (webview) {
                 webview.postMessage({ command: 'generationFinished', success: generationSuccess });
             }
             if (preGenerationCheckpointHash && context.workspaceState.get(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY) === preGenerationCheckpointHash) {
                  await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, undefined);
-                             vscode.window.showInformationMessage(`Checkpoint ${preGenerationCheckpointHash.substring(0,7)} foi criado, mas nenhuma operação foi executada.`);
+                             vscode.window.showInformationMessage(`Checkpoint ${preGenerationCheckpointHash.substring(0,7)} was created, but no operations were executed.`);
                   if (webview) { webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: false }); }
             }
             await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
         }
     } catch (error) {
-              vscode.window.showErrorMessage(`Erro durante processo de configuração da geração: ${error instanceof Error ? error.message : String(error)}`);
+              vscode.window.showErrorMessage(`Error during generation setup process: ${error instanceof Error ? error.message : String(error)}`);
         await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, undefined);
         await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
         generationSuccess = false;
@@ -151,4 +148,5 @@ export async function processPastedStructureCommand(
          }
          vscode.commands.executeCommand('buildy.refreshCopySystemView');
     }
-}
+}
+

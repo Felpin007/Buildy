@@ -20,9 +20,13 @@ export const WebviewCommands = {
     REQUEST_INITIAL_UNDO_STATE: 'requestInitialUndoState',
     GET_PROMPT_CONTENT: 'getPromptContent',
     COPY_FILES_TO_CLIPBOARD: 'copyFilesToClipboard',
+    COPY_DIFF_TO_CLIPBOARD: 'copyDiffToClipboard',
+    CREATE_SOLUTION_FILE: 'createSolutionFile',
+    DELETE_SOLUTION_FILE: 'deleteSolutionFile',
     WEBVIEW_READY: 'webviewReady',
 
     // Comandos enviados da extensão para o webview
+    SHOW_INTERNAL_NOTIFICATION: 'showInternalNotification',
     UNDO_FINISHED: 'undoFinished',
     UNDO_PROGRESS_ERROR: 'undoProgressError',
     UNDO_PROGRESS: 'undoProgress',

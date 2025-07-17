@@ -26,7 +26,7 @@ export async function undoLastGenerationCommand(
     if (!checkpointHash) {
          checkpointHash = context.workspaceState.get<string>(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY);
          if (!checkpointHash) {
-                     vscode.window.showWarningMessage('Nenhum checkpoint de geração anterior encontrado para desfazer.');
+                     vscode.window.showWarningMessage('No previous generation checkpoint found to undo.');
             return;
          }
          console.warn("[undoCommand] Comando desfazer chamado sem hash específico, usando último hash pré-geração armazenado:", checkpointHash);
@@ -40,7 +40,7 @@ export async function undoLastGenerationCommand(
         const tempTaskId = `undo-${Date.now()}`;
         tracker = await CheckpointTracker.create(tempTaskId, context.globalStorageUri.fsPath);
         if (!tracker) {
-                     vscode.window.showErrorMessage('Não foi possível inicializar sistema de checkpoint para realizar desfazer.');
+                     vscode.window.showErrorMessage('Could not initialize checkpoint system to perform undo.');
             return;
         }
               console.log("[undoCommand] Preparando estado atual antes de desfazer...");
@@ -54,7 +54,7 @@ export async function undoLastGenerationCommand(
               if (webview) {
                               webview.postMessage({ command: 'undoProgressStart', message: `Revertendo para checkpoint ${targetCheckpointShortHash}...` });
               } else {
-                              vscode.window.showInformationMessage(`Revertendo arquivos para checkpoint ${targetCheckpointShortHash}...`);
+                              vscode.window.showInformationMessage(`Reverting files to checkpoint ${targetCheckpointShortHash}...`);
               }
         await tracker.resetHead(checkpointHash);
         console.log(`[undoCommand] resetHead(${checkpointHash}) concluído.`);
@@ -89,7 +89,7 @@ export async function undoLastGenerationCommand(
                    webview.postMessage({ command: WebviewCommands.UNDO_FINISHED, success: true }); 
                    console.log("[undoCommand] Enviadas mensagens de progresso e conclusão de desfazer para webview.");
                } else {
-                                    vscode.window.showInformationMessage('Arquivos revertidos com sucesso para o checkpoint!');
+                                    vscode.window.showInformationMessage('Files successfully reverted to checkpoint!');
                }
         await context.workspaceState.update(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY, undefined);
         await context.workspaceState.update(constants.LAST_SUCCESSFUL_GENERATION_CHECKPOINT_KEY, undefined);
@@ -126,7 +126,7 @@ export async function undoLastGenerationCommand(
                 const finalPreGenHash = context.workspaceState.get<string>(constants.LAST_PRE_GENERATION_CHECKPOINT_KEY);
                 webview.postMessage({ command: WebviewCommands.UPDATE_UNDO_STATE, canUndo: !!finalPreGenHash });
             } else {
-                 vscode.window.showErrorMessage(`Falha ao reverter para checkpoint: ${undoError instanceof Error ? undoError.message : String(undoError)}`);
+                 vscode.window.showErrorMessage(`Failed to revert to checkpoint: ${undoError instanceof Error ? undoError.message : String(undoError)}`);
             }
         }
         await context.workspaceState.update(constants.LAST_UNDO_BEFORE_HASH_KEY, undefined);

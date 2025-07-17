@@ -90,6 +90,104 @@ export function getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.
                     display: inline-block;
                     vertical-align: middle;
                 }
+                /* Text Editor Section Styles */
+                .text-editor-section {
+                    padding: 15px;
+                    border-top: 1px solid var(--vscode-panel-border);
+                }
+                .text-editor-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 10px;
+                }
+                .text-editor-header h3 {
+                    margin: 0;
+                    color: var(--vscode-foreground);
+                }
+                .text-editor-actions {
+                    display: flex;
+                    gap: 5px;
+                }
+                #solutionTextarea {
+                    width: 100%;
+                    min-height: 300px;
+                    resize: vertical;
+                    font-family: var(--vscode-editor-font-family);
+                    font-size: var(--vscode-editor-font-size);
+                }
+                /* Internal Notification System */
+                .notification-container {
+                    position: fixed;
+                    top: 10px;
+                    right: 10px;
+                    z-index: 1000;
+                    max-width: 400px;
+                }
+                .notification {
+                    padding: 12px 16px;
+                    margin-bottom: 8px;
+                    border-radius: 4px;
+                    border-left: 4px solid;
+                    background-color: var(--vscode-notifications-background);
+                    color: var(--vscode-notifications-foreground);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                    animation: slideIn 0.3s ease-out;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    position: relative;
+                }
+                .notification.info {
+                    border-left-color: var(--vscode-notificationsInfoIcon-foreground, #007acc);
+                }
+                .notification.warning {
+                    border-left-color: var(--vscode-notificationsWarningIcon-foreground, #ff8c00);
+                }
+                .notification.error {
+                    border-left-color: var(--vscode-notificationsErrorIcon-foreground, #f14c4c);
+                }
+                .notification-icon {
+                    flex-shrink: 0;
+                }
+                .notification-message {
+                    flex: 1;
+                    font-size: 13px;
+                    line-height: 1.4;
+                }
+                .notification-close {
+                    background: none;
+                    border: none;
+                    color: var(--vscode-notifications-foreground);
+                    cursor: pointer;
+                    padding: 0;
+                    margin: 0;
+                    opacity: 0.7;
+                    flex-shrink: 0;
+                }
+                .notification-close:hover {
+                    opacity: 1;
+                }
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
             </style>
         </head>
         <body>
@@ -145,6 +243,12 @@ export function getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.
                             <button id="copySelectedButton" title="Copy Selected Files">
                                 <i class="codicon codicon-clippy"></i>
                             </button>
+                            <button id="copyDiffButton" title="Copy Diff to Clipboard">
+                                <i class="codicon codicon-diff"></i>
+                            </button>
+                            <button id="openTextareaButton" title="Open Text Editor">
+                                <i class="codicon codicon-edit"></i>
+                            </button>
                             <button id="refreshTreeButton" title="Refresh">
                                 <i class="codicon codicon-refresh"></i>
                             </button>
@@ -158,8 +262,27 @@ export function getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.
                         <ul id="fileTree" class="file-tree" style="display: none;" role="tree"></ul>
                     </div>
                 </section>
+                <section id="textEditorSection" class="text-editor-section" style="display: none;">
+                    <div class="text-editor-header">
+                        <h3>Text Editor</h3>
+                        <div class="text-editor-actions">
+                            <button id="createSolutionButton" title="Create solucao.txt">
+                                <i class="codicon codicon-save"></i> Create
+                            </button>
+                            <button id="deleteSolutionButton" title="Delete solucao.txt">
+                                <i class="codicon codicon-trash"></i> Delete
+                            </button>
+                            <button id="closeTextareaButton" title="Close Text Editor">
+                                <i class="codicon codicon-close"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="solutionTextarea" placeholder="Paste your text here..." rows="20"></textarea>
+                </section>
                 ` : ''}
             </div>
+            <!-- Internal Notification Container -->
+            <div id="notificationContainer" class="notification-container"></div>
             <div id="explorerContextMenu"></div> <!-- Restore context menu container -->
             <script type="module" nonce="${nonce}" src="${scriptUri}"></script> <!-- Load main.js as module -->
         </body>

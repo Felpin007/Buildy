@@ -3,7 +3,7 @@
   "displayName": "Buildy",
   "description": "Automate codebase changes using AI-generated instructions. Paste structured responses (XML-like format) to create/modify files, run terminal commands, and manage your project structure. Includes undo functionality (requires Git) and file browsing.",
   "publisher": "FelpolinColorado",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "UNLICENSED",
   "homepage": "https://github.com/Felpin007/Buildy",
   "repository": {

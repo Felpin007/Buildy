@@ -11,6 +11,8 @@ export function handleCheckboxChange(checkbox, fileTree) {
     });
     updateParentCheckboxes(listItem, fileTree);
 }
+
+
 export function updateParentCheckboxes(listItem, fileTree) {
     let current = listItem.parentElement?.closest('.file-tree-item'); 
     while (current) {
@@ -97,4 +99,5 @@ export function updateCopyButtonState(copyButton, fileTree) {
     } else {
               copyButton.disabled = true;
           }
-      }
+      }
+
